@@ -1,446 +1,562 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AgroYield – Assistant Rendement IA</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --green-deep:   #0a2e0a;
-      --green-mid:    #1a4a1a;
-      --green-light:  #7ec850;
-      --green-pale:   #d4f0a0;
-      --green-muted:  #a0c878;
-      --green-dim:    #6b9b42;
-      --white-glass:  rgba(255,255,255,0.07);
-      --border:       rgba(126,200,80,0.25);
-    }
-
-    html, body {
-      height: 100%;
-      background: linear-gradient(160deg, var(--green-deep) 0%, #1a4a1a 40%, #2d6a2d 100%);
-      font-family: 'Lato', sans-serif;
-      color: var(--green-pale);
-    }
-
-    #app {
-      max-width: 640px;
-      margin: 0 auto;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 0 16px;
-    }
-
-    header {
-      padding: 24px 0 12px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .logo-circle {
-      width: 52px; height: 52px; flex-shrink: 0;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--green-light), #4a9e1a);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 26px;
-      box-shadow: 0 4px 20px rgba(126,200,80,0.4);
-    }
-    .logo-text h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 26px; font-weight: 700;
-      color: var(--green-pale);
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-    .logo-text p {
-      font-size: 11px; color: #8fbc5a;
-      letter-spacing: 1.5px; text-transform: uppercase;
-    }
-    .status-badge {
-      margin-left: auto;
-      background: rgba(126,200,80,0.15);
-      border: 1px solid rgba(126,200,80,0.3);
-      border-radius: 20px; padding: 4px 12px;
-      font-size: 11px; color: var(--green-light);
-      white-space: nowrap;
-    }
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(126,200,80,0.4), transparent);
-      margin: 4px 0 16px;
-    }
-
-    #welcome {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 24px;
-      padding: 16px 0 32px;
-    }
-    .welcome-card {
-      width: 100%;
-      background: var(--white-glass);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 28px 24px;
-      text-align: center;
-    }
-    .welcome-card .emoji { font-size: 48px; margin-bottom: 16px; }
-    .welcome-card h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 20px; color: var(--green-pale); margin-bottom: 10px;
-    }
-    .welcome-card p {
-      color: var(--green-muted); font-size: 14px; line-height: 1.7;
-      margin-bottom: 20px;
-    }
-    .welcome-card p strong { color: var(--green-light); }
-
-    .btn-start {
-      background: linear-gradient(135deg, var(--green-light), #4a9e1a);
-      border: none; border-radius: 30px;
-      padding: 14px 32px;
-      color: #fff; font-size: 15px; font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 20px rgba(126,200,80,0.4);
-      transition: transform 0.2s;
-      font-family: 'Lato', sans-serif;
-    }
-    .btn-start:hover { transform: scale(1.05); }
-
-    .suggestions-label {
-      width: 100%;
-      font-size: 11px; color: var(--green-dim);
-      text-transform: uppercase; letter-spacing: 1.2px;
-      margin-bottom: 10px;
-    }
-    .suggestions {
-      width: 100%;
-      display: flex; flex-wrap: wrap; gap: 8px;
-    }
-    .suggestion-btn {
-      background: rgba(126,200,80,0.1);
-      border: 1px solid rgba(126,200,80,0.25);
-      border-radius: 20px; padding: 8px 14px;
-      color: var(--green-muted); font-size: 13px;
-      cursor: pointer; transition: all 0.2s;
-      font-family: 'Lato', sans-serif;
-    }
-    .suggestion-btn:hover {
-      background: rgba(126,200,80,0.2);
-      color: var(--green-pale);
-    }
-
-    #chat-area {
-      flex: 1;
-      display: none;
-      flex-direction: column;
-      gap: 14px;
-      padding: 8px 0 12px;
-      overflow-y: auto;
-    }
-    #chat-area.active { display: flex; }
-
-    .msg-row { display: flex; align-items: flex-end; gap: 8px; }
-    .msg-row.user { justify-content: flex-end; }
-    .msg-row.assistant { justify-content: flex-start; }
-
-    .avatar {
-      width: 32px; height: 32px; flex-shrink: 0;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-    }
-    .avatar.bot { background: linear-gradient(135deg, var(--green-light), #4a9e1a); }
-    .avatar.user { background: rgba(255,255,255,0.15); }
-
-    .bubble {
-      max-width: 78%;
-      padding: 12px 16px;
-      font-size: 14px; line-height: 1.65;
-      white-space: pre-wrap;
-    }
-    .bubble.user {
-      background: linear-gradient(135deg, var(--green-light), #4a9e1a);
-      border-radius: 20px 20px 4px 20px;
-      color: #fff;
-      box-shadow: 0 4px 15px rgba(126,200,80,0.3);
-    }
-    .bubble.assistant {
-      background: var(--white-glass);
-      border: 1px solid rgba(126,200,80,0.2);
-      border-radius: 20px 20px 20px 4px;
-      color: #c8e8a0;
-    }
-
-    .typing { display: flex; gap: 5px; align-items: center; padding: 14px 18px; }
-    .dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--green-light);
-      animation: pulse 1.2s ease-in-out infinite;
-    }
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes pulse {
-      0%,100% { opacity: 0.3; transform: scale(0.8); }
-      50%      { opacity: 1;   transform: scale(1.2); }
-    }
-
-    #input-bar {
-      display: none;
-      padding: 12px 0 24px;
-      position: sticky; bottom: 0;
-      background: linear-gradient(0deg, var(--green-deep) 60%, transparent);
-    }
-    #input-bar.active { display: block; }
-
-    .input-wrap {
-      display: flex; align-items: flex-end; gap: 10px;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(126,200,80,0.3);
-      border-radius: 30px;
-      padding: 8px 8px 8px 18px;
-      box-shadow: 0 4px 30px rgba(0,0,0,0.3);
-    }
-    #user-input {
-      flex: 1; background: transparent;
-      border: none; outline: none;
-      color: var(--green-pale); font-size: 14px;
-      font-family: 'Lato', sans-serif;
-      resize: none; line-height: 1.5;
-      padding-top: 6px;
-      min-height: 32px; max-height: 120px;
-    }
-    #user-input::placeholder { color: rgba(126,200,80,0.4); }
-
-    #send-btn {
-      width: 42px; height: 42px; flex-shrink: 0;
-      border-radius: 50%; border: none;
-      background: rgba(126,200,80,0.2);
-      color: var(--green-light); font-size: 18px;
-      cursor: pointer; transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    #send-btn.ready {
-      background: linear-gradient(135deg, var(--green-light), #4a9e1a);
-      color: #fff;
-      box-shadow: 0 4px 15px rgba(126,200,80,0.4);
-    }
-    #send-btn.ready:hover { transform: scale(1.1); }
-
-    .footer-note {
-      text-align: center;
-      color: rgba(126,200,80,0.4);
-      font-size: 11px; margin-top: 8px;
-    }
-
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(126,200,80,0.3); border-radius: 2px; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AgroYield</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--soil:#1c1008;--bark:#3d2a0f;--moss:#2a4a1a;--leaf:#4a8c28;--lime:#7ec850;--sun:#f0b840;--gold:#d4902a;--ivory:#f5ead0}
+html,body{height:100%}
+body{background:var(--soil);font-family:'DM Sans',sans-serif;color:var(--ivory);overflow-x:hidden}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(74,140,40,.20) 0%,transparent 65%),radial-gradient(ellipse 60% 50% at 85% 90%,rgba(42,74,26,.28) 0%,transparent 60%)}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);animation:drift 20s ease-in-out infinite alternate}
+.o1{width:350px;height:350px;background:rgba(74,140,40,.10);top:-80px;left:-80px}
+.o2{width:280px;height:280px;background:rgba(240,184,64,.06);bottom:10%;right:-60px;animation-duration:26s;animation-delay:-9s}
+@keyframes drift{from{transform:translate(0,0)}to{transform:translate(28px,18px)}}
+#app{position:relative;z-index:1;max-width:640px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:0 16px}
+header{flex-shrink:0;padding:20px 0 12px;display:flex;align-items:center;gap:13px;animation:slideDown .7s cubic-bezier(.16,1,.3,1) both}
+@keyframes slideDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+.logo-ring{position:relative;flex-shrink:0;width:50px;height:50px}
+.logo-ring::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(#7ec850,#f0b840,#4a8c28,#7ec850);animation:spin 8s linear infinite;opacity:.6}
+.logo-ring::after{content:'';position:absolute;inset:2px;border-radius:50%;background:linear-gradient(135deg,#3d2a0f,#2a4a1a)}
+.logo-inner{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;font-size:22px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo-text h1{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;font-style:italic;background:linear-gradient(135deg,#f5ead0 40%,#f0b840);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.logo-text p{font-size:9.5px;font-weight:500;color:#d4902a;letter-spacing:2.5px;text-transform:uppercase;margin-top:3px}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:7px}
+.status-pill{display:flex;align-items:center;gap:6px;background:rgba(126,200,80,.08);border:1px solid rgba(126,200,80,.22);border-radius:30px;padding:5px 13px}
+.sdot{width:6px;height:6px;border-radius:50%;background:#7ec850;box-shadow:0 0 8px #7ec850;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.status-pill span{font-size:11px;color:#7ec850;font-weight:500}
+.btn-hdr{display:none;align-items:center;gap:6px;border-radius:30px;padding:5px 13px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .22s}
+.btn-hdr.show{display:flex}
+.btn-print{background:rgba(240,184,64,.10);border:1px solid rgba(240,184,64,.22);color:rgba(240,184,64,.85)}
+.btn-exit{background:rgba(220,60,50,.10);border:1px solid rgba(220,60,50,.25);color:rgba(240,140,130,.85)}
+.divider{flex-shrink:0;height:1px;margin:0 0 14px;background:linear-gradient(90deg,transparent,rgba(240,184,64,.22) 30%,rgba(126,200,80,.22) 70%,transparent)}
+/* HERO */
+#hero-panel{flex-shrink:0;margin-bottom:13px;animation:fadeUp .8s cubic-bezier(.16,1,.3,1) .15s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.hero-card{background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.10);border-radius:22px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 8px 40px rgba(0,0,0,.35);position:relative}
+.hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#7ec850,#f0b840,transparent)}
+#hero-exp{padding:28px 24px 22px;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(240,184,64,.10);border:1px solid rgba(240,184,64,.22);border-radius:30px;padding:4px 14px;font-size:10px;font-weight:600;color:#f0b840;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:18px}
+.hero-icon{font-size:50px;display:block;margin-bottom:16px;animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+#hero-exp h2{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;margin-bottom:10px}
+#hero-exp h2 em{color:#f0b840;font-style:normal}
+#hero-exp p{font-size:13px;font-weight:300;color:rgba(245,234,208,.65);line-height:1.75;max-width:420px;margin:0 auto}
+#hero-exp p strong{color:#7ec850;font-weight:500}
+#hero-cmp{display:none;padding:13px 20px 0;align-items:center;gap:12px}
+.hc-ico{font-size:26px}
+.hc-txt h3{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:#f5ead0;line-height:1}
+.hc-txt p{font-size:11px;color:rgba(245,234,208,.45);margin-top:2px}
+/* CATÉGORIE BUTTONS */
+.feat-row{display:flex;border-top:1px solid rgba(245,234,208,.07)}
+.feat-btn{flex:1;padding:14px 8px;text-align:center;cursor:pointer;border:none;background:transparent;font-family:'DM Sans',sans-serif;transition:all .22s;position:relative;overflow:hidden}
+.feat-btn:not(:last-child){border-right:1px solid rgba(245,234,208,.07)}
+.feat-btn::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .22s;background:rgba(126,200,80,.10)}
+.feat-btn:hover::before{opacity:1}
+.feat-btn.active::before{opacity:1}
+.feat-btn.active{box-shadow:inset 0 -2px 0 #7ec850}
+.feat-ico{font-size:20px;margin-bottom:5px;display:block;position:relative;z-index:1}
+.feat-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:1px;font-weight:600;color:rgba(245,234,208,.40);display:block;position:relative;z-index:1;transition:color .2s}
+.feat-btn:hover .feat-lbl,.feat-btn.active .feat-lbl{color:rgba(245,234,208,.85)}
+/* CLÉ API */
+#apikey-section{margin-bottom:18px;animation:fadeUp .8s cubic-bezier(.16,1,.3,1) .2s both}
+.apikey-card{background:rgba(240,184,64,.06);border:1px solid rgba(240,184,64,.18);border-radius:16px;padding:16px 18px}
+.apikey-card label{display:block;font-size:10px;font-weight:600;color:#d4902a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.apikey-row{display:flex;gap:8px;align-items:center}
+#api-input{flex:1;background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.15);border-radius:10px;padding:9px 12px;color:#f5ead0;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+#api-input:focus{border-color:rgba(240,184,64,.35)}
+#api-input::placeholder{color:rgba(245,234,208,.20)}
+.btn-save{padding:9px 16px;background:linear-gradient(135deg,#3d7a20,#2a5514);border:none;border-radius:10px;color:#f5ead0;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .2s}
+.btn-save:hover{transform:translateY(-1px)}
+.api-status{font-size:11px;margin-top:7px;color:rgba(245,234,208,.35)}
+.api-status.ok{color:#7ec850}
+.api-status.err{color:#e87060}
+/* PANEL CATÉGORIE */
+#cat-panel{display:none;flex-shrink:0;margin-bottom:10px}
+#cat-panel.show{display:block;animation:panelIn .32s cubic-bezier(.16,1,.3,1) both}
+@keyframes panelIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.cat-inner{background:rgba(245,234,208,.03);border:1px solid rgba(245,234,208,.10);border-radius:16px;padding:12px 14px 10px;backdrop-filter:blur(8px)}
+.cat-title{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#d4902a;margin-bottom:9px}
+#cat-chips{display:flex;flex-direction:column;gap:5px}
+.sec-lbl{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:rgba(240,184,64,.65);margin:8px 0 4px 2px}
+.cat-chip{width:100%;background:rgba(245,234,208,.05);border:1px solid rgba(245,234,208,.10);border-radius:12px;padding:9px 14px;color:rgba(245,234,208,.62);font-size:12.5px;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;line-height:1.4;transition:all .2s}
+.cat-chip:hover{background:rgba(126,200,80,.12);border-color:rgba(126,200,80,.22);color:#f5ead0;padding-left:18px}
+/* ACCUEIL BAS */
+#welcome-bot{animation:fadeUp .85s cubic-bezier(.16,1,.3,1) .3s both}
+.btn-start{width:100%;margin-bottom:18px;background:linear-gradient(135deg,#3d7a20 0%,#2a5514 60%,#3d7a20 100%);background-size:200% 100%;border:none;border-radius:14px;padding:15px 28px;color:#f5ead0;font-size:14.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 6px 24px rgba(74,140,40,.35);transition:all .3s cubic-bezier(.16,1,.3,1)}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(74,140,40,.45)}
+.sec-div{display:flex;align-items:center;gap:10px;font-size:10px;font-weight:600;color:#d4902a;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+.sec-div::before,.sec-div::after{content:'';flex:1;height:1px;background:rgba(240,184,64,.22)}
+.suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.sug-btn{background:rgba(245,234,208,.04);border:1px solid rgba(245,234,208,.09);border-radius:22px;padding:8px 14px;color:rgba(245,234,208,.52);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .22s}
+.sug-btn:hover{background:rgba(126,200,80,.10);border-color:rgba(126,200,80,.22);color:#f5ead0;transform:translateY(-1px)}
+/* CHAT */
+#chat-area{flex:1;display:none;flex-direction:column;gap:14px;overflow-y:auto;padding:4px 0 8px}
+#chat-area.on{display:flex}
+.msg-row{display:flex;align-items:flex-end;gap:9px}
+.msg-row.user{justify-content:flex-end}
+.msg-row.bot{justify-content:flex-start}
+.av{width:32px;height:32px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px}
+.av.bot{background:linear-gradient(135deg,#3d2a0f,#2a4a1a);border:1px solid rgba(126,200,80,.22)}
+.av.user{background:linear-gradient(135deg,#3a2810,#5a3c18);border:1px solid rgba(240,184,64,.20)}
+.bub{max-width:76%;padding:12px 16px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;animation:bubPop .32s cubic-bezier(.16,1,.3,1) both}
+@keyframes bubPop{from{opacity:0;transform:scale(.92) translateY(5px)}to{opacity:1;transform:none}}
+.bub.user{background:linear-gradient(135deg,#3d6b20,#2a4d14);border-radius:20px 20px 4px 20px;color:rgba(245,234,208,.95);border:1px solid rgba(126,200,80,.22)}
+.bub.bot{background:rgba(245,234,208,.04);border:1px solid rgba(245,234,208,.10);border-radius:20px 20px 20px 4px;color:rgba(245,234,208,.88)}
+.tw{display:flex;align-items:center;gap:5px;padding:13px 17px}
+.dot{width:6px;height:6px;border-radius:50%;background:#7ec850;animation:bounce 1.3s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.17s;background:#f0b840}
+.dot:nth-child(3){animation-delay:.34s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.3}40%{transform:translateY(-6px);opacity:1}}
+/* INPUT */
+#input-bar{display:none;flex-shrink:0;padding:10px 0 22px;position:sticky;bottom:0}
+#input-bar::before{content:'';position:absolute;inset:-30px -20px 0;background:linear-gradient(0deg,#1c1008 55%,transparent);pointer-events:none}
+#input-bar.on{display:block}
+.input-wrap{position:relative;display:flex;align-items:flex-end;gap:9px;background:rgba(255,255,255,.05);border:1px solid rgba(245,234,208,.12);border-radius:18px;padding:9px 9px 9px 17px;transition:border-color .2s}
+.input-wrap:focus-within{border-color:rgba(126,200,80,.28)}
+#user-input{flex:1;background:transparent;border:none;outline:none;color:#f5ead0;font-size:13.5px;font-family:'DM Sans',sans-serif;resize:none;line-height:1.55;padding:4px 0;min-height:30px;max-height:110px}
+#user-input::placeholder{color:rgba(245,234,208,.20)}
+#send-btn{width:40px;height:40px;flex-shrink:0;border-radius:12px;border:1px solid rgba(245,234,208,.09);background:rgba(245,234,208,.05);color:rgba(245,234,208,.25);cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;font-size:16px}
+#send-btn.on{background:linear-gradient(135deg,#4a8c28,#2a5e10);border-color:rgba(126,200,80,.3);color:#f5ead0}
+.footer-note{text-align:center;color:rgba(245,234,208,.15);font-size:10px;margin-top:7px}
+.footer-note span{color:rgba(240,184,64,.32)}
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center}
+.modal-ov.show{display:flex}
+.modal-bg{position:absolute;inset:0;background:rgba(10,6,2,.75);backdrop-filter:blur(6px)}
+.modal-box{position:relative;z-index:1;background:linear-gradient(160deg,#2a1e0e,#1e1508);border:1px solid rgba(245,234,208,.12);border-radius:24px;padding:32px 28px;max-width:320px;width:90%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.modal-emo{font-size:44px;margin-bottom:14px;display:block}
+.modal-box h3{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#f5ead0;margin-bottom:10px}
+.modal-box p{font-size:13px;color:rgba(245,234,208,.5);line-height:1.65;margin-bottom:24px}
+.modal-acts{display:flex;gap:10px}
+.btn-cancel{flex:1;padding:12px;background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.12);border-radius:12px;color:rgba(245,234,208,.6);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-quit{flex:1;padding:12px;background:linear-gradient(135deg,#8b2020,#5c1010);border:1px solid rgba(220,60,50,.3);border-radius:12px;color:#ffccc8;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(126,200,80,.18);border-radius:2px}
+</style>
 </head>
 <body>
+<div class="bg"><div class="orb o1"></div><div class="orb o2"></div></div>
 <div id="app">
 
-  <header>
-    <div class="logo-circle">🌾</div>
-    <div class="logo-text">
-      <h1>AgroYield</h1>
-      <p>Votre assistant rendement IA</p>
+<header>
+  <div class="logo-ring"><div class="logo-inner">🌾</div></div>
+  <div class="logo-text"><h1>AgroYield</h1><p>Assistant IA Agricole</p></div>
+  <div class="hdr-r">
+    <div class="status-pill" id="status-pill"><div class="sdot"></div><span>En ligne</span></div>
+    <button class="btn-hdr btn-print" id="btn-print">🖨️ Imprimer</button>
+    <button class="btn-hdr btn-exit"  id="btn-exit">⏹ Terminer</button>
+  </div>
+</header>
+<div class="divider"></div>
+
+<div id="hero-panel">
+  <div class="hero-card">
+    <div id="hero-exp">
+      <div class="hero-badge">✦ Intelligence Agricole ✦</div>
+      <span class="hero-icon">🌱</span>
+      <h2>Bonjour, <em>Fermier !</em></h2>
+      <p>Votre assistant IA expert en agriculture agro-pastorale africaine. Je vous accompagne pour <strong>maximiser vos rendements</strong> en culture et en élevage.</p>
     </div>
-    <div class="status-badge">● En ligne</div>
-  </header>
-  <div class="divider"></div>
-
-  <div id="welcome">
-    <div class="welcome-card">
-      <div class="emoji">🌱</div>
-      <h2>Bonjour, Fermier !</h2>
-      <p>Je suis votre assistant IA spécialisé en agriculture agro-pastorale. Je vous aide à <strong>maximiser vos rendements</strong> en Maïs, Soja, Bovins, Ovins, Caprins et Volailles.</p>
-
-      <!-- API Key input -->
-      <div style="margin-bottom:18px; text-align:left;">
-        <label style="font-size:12px; color:var(--green-dim); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">🔑 Clé API Anthropic</label>
-        <input type="password" id="api-key-input" placeholder="sk-ant-..." style="
-          width:100%; padding:10px 14px;
-          background:rgba(0,0,0,0.3); border:1px solid var(--border);
-          border-radius:12px; color:var(--green-pale);
-          font-size:13px; font-family:'Lato',sans-serif; outline:none;
-        "/>
-        <p style="font-size:11px; color:rgba(126,200,80,0.5); margin-top:6px; line-height:1.5;">
-          Obtenez votre clé sur <a href="https://console.anthropic.com" target="_blank" style="color:var(--green-light);">console.anthropic.com</a>. Elle n'est jamais partagée.
-        </p>
+    <div id="hero-cmp">
+      <div class="hc-ico">🌱</div>
+      <div class="hc-txt">
+        <h3>AgroYield — à votre service</h3>
+        <p id="hc-sub">Choisissez un thème ou posez votre question</p>
       </div>
-
-      <button class="btn-start" onclick="startChat()">Commencer la consultation 🚀</button>
     </div>
-    <p class="suggestions-label">Questions fréquentes</p>
-    <div class="suggestions" id="suggestions"></div>
-  </div>
-
-  <div id="chat-area"></div>
-
-  <div id="input-bar">
-    <div class="input-wrap">
-      <textarea id="user-input" rows="1" placeholder="Posez votre question agricole..."></textarea>
-      <button id="send-btn" onclick="sendMessage()">➤</button>
+    <div class="feat-row">
+      <button class="feat-btn" id="btn-cultures"><span class="feat-ico">🌽</span><span class="feat-lbl">Cultures</span></button>
+      <button class="feat-btn" id="btn-elevage"><span class="feat-ico">🐄</span><span class="feat-lbl">Élevage</span></button>
+      <button class="feat-btn" id="btn-climat"><span class="feat-ico">🌤️</span><span class="feat-lbl">Climat</span></button>
+      <button class="feat-btn" id="btn-rendement"><span class="feat-ico">📈</span><span class="feat-lbl">Rendement</span></button>
     </div>
-    <p class="footer-note">Propulsé par Claude IA · AgroYield</p>
   </div>
-
 </div>
 
+<div id="cat-panel">
+  <div class="cat-inner">
+    <div class="cat-title" id="cat-title"></div>
+    <div id="cat-chips"></div>
+  </div>
+</div>
+
+<div id="welcome-bot">
+  <div id="apikey-section">
+    <div class="apikey-card">
+      <label>🔑 Clé API Anthropic</label>
+      <div class="apikey-row">
+        <input type="password" id="api-input" placeholder="sk-ant-api03-…"/>
+        <button class="btn-save" id="btn-save-key">Enregistrer</button>
+      </div>
+      <div class="api-status" id="api-status">Entrez votre clé API pour commencer</div>
+    </div>
+  </div>
+  <button class="btn-start" id="btn-start">Commencer la consultation &nbsp;🚀</button>
+  <div class="sec-div">Questions fréquentes</div>
+  <div class="suggestions" id="suggestions"></div>
+</div>
+
+<div id="chat-area"></div>
+
+<div id="input-bar">
+  <div class="input-wrap">
+    <textarea id="user-input" rows="1" placeholder="Posez votre question agricole…"></textarea>
+    <button id="send-btn">➤</button>
+  </div>
+  <p class="footer-note">Propulsé par <span>Claude AI</span> · AgroYield</p>
+</div>
+
+<div class="modal-ov" id="modal-sortie">
+  <div class="modal-bg" id="modal-bg"></div>
+  <div class="modal-box">
+    <span class="modal-emo">🌾</span>
+    <h3>Terminer la consultation ?</h3>
+    <p>L'historique sera effacé et vous reviendrez à l'accueil.</p>
+    <div class="modal-acts">
+      <button class="btn-cancel" id="btn-continuer">Continuer</button>
+      <button class="btn-quit"   id="btn-quitter">Oui, terminer</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- #app -->
+
 <script>
-  const SYSTEM_PROMPT = `Tu es AgroYield, un assistant IA expert en agriculture agro-pastorale africaine. Tu aides les paysans à maximiser leurs rendements agricoles et d'élevage.
+(function() {
+"use strict";
 
-Ton rôle :
-- Donner des conseils pratiques, simples et adaptés au contexte africain (climat, ressources limitées, accès aux intrants)
-- Poser des questions pour mieux comprendre la situation du paysan (région, type de sol, saison, pratiques actuelles)
-- Proposer des solutions concrètes pour améliorer les rendements : Maïs, Soja, Bovins, Ovins, Caprins, Volailles (pondeuses, poulets de chair)
-- Parler simplement, sans jargon technique compliqué
-- Toujours encourager et motiver le paysan
-- Répondre en français, en moins de 150 mots par réponse pour rester lisible sur mobile
-- Quand pertinent, structurer ta réponse avec des points courts et clairs
+// ─── CONFIGURATION ───────────────────────────────────────────────
+var CLE_API = "";
 
-Commence toujours par accueillir chaleureusement et poser une première question sur la situation du paysan.`;
+var PROMPT = "Tu es AgroYield, un assistant IA expert en agriculture agro-pastorale africaine.\n\nLes 15 problèmes clés :\n1. Dépendance à la pluie\n2. Faible fertilité des sols\n3. Accès limité aux semences améliorées\n4. Intrants coûteux\n5. Rendements bas\n6. Ravageurs et maladies\n7. Faible irrigation\n8. Pertes post-récolte\n9. Mauvais accès marchés\n10. Faible transformation locale\n11. Déficit fourrager\n12. Maladies animales\n13. Faible productivité laitière\n14. Conflits terre/eau\n15. Faible financement et organisation\n\nConseils pratiques adaptés à l'Afrique, moins de 160 mots par réponse, solutions sans grands moyens, encourager le paysan. Commence par un accueil chaleureux.";
 
-  const SUGGESTIONS = [
-    "Mon maïs a un faible rendement cette saison",
-    "Comment améliorer la ponte de mes poules ?",
-    "Mes bovins perdent du poids en saison sèche",
-    "Quelle fumure pour mon champ de soja ?",
-    "Comment lutter contre la sécheresse ?",
-    "Mes caprins tombent souvent malades",
-  ];
+var CATS = {
+  cultures: {
+    label: "🌽 Cultures",
+    sections: [
+      { titre: "🌱 Sol & Semences", items: [
+        "Mes sols sont épuisés — comment restaurer leur fertilité ?",
+        "Comment accéder à de bonnes semences améliorées ?",
+        "Les engrais coûtent trop cher — quelles alternatives naturelles ?"
+      ]},
+      { titre: "🐛 Ravageurs & Récolte", items: [
+        "Des ravageurs et maladies détruisent mes cultures — que faire ?",
+        "Je perds beaucoup de récolte au stockage — comment éviter ça ?",
+        "Comment transformer ma récolte pour mieux la valoriser ?"
+      ]}
+    ]
+  },
+  elevage: {
+    label: "🐄 Élevage",
+    sections: [
+      { titre: "🌿 Alimentation & Santé", items: [
+        "Mon bétail manque de fourrage en saison sèche — quelles solutions ?",
+        "Comment protéger mon troupeau des maladies contagieuses ?",
+        "Mes vaches produisent peu de lait — comment améliorer ça ?"
+      ]},
+      { titre: "🐣 Reproduction & Cohabitation", items: [
+        "Mes animaux se reproduisent peu — que faire ?",
+        "Il y a des conflits entre éleveurs et agriculteurs pour les terres",
+        "Comment améliorer la ponte et la santé de mes volailles ?"
+      ]}
+    ]
+  },
+  climat: {
+    label: "🌤️ Climat & Eau",
+    sections: [
+      { titre: "🌧️ Pluie & Sécheresse", items: [
+        "Je dépends entièrement de la pluie — comment sécuriser ma production ?",
+        "Les sécheresses se répètent — comment adapter mes cultures ?",
+        "Les pluies arrivent trop tard ou trop fort — comment m'organiser ?"
+      ]},
+      { titre: "💧 Irrigation & Eau", items: [
+        "Comment irriguer mes champs avec peu de moyens ?",
+        "Comment gérer l'eau entre cultures et élevage sans conflit ?",
+        "Mon champ est inondé en saison des pluies — comment le protéger ?"
+      ]}
+    ]
+  },
+  rendement: {
+    label: "📈 Rendement & Marché",
+    sections: [
+      { titre: "📊 Production & Vente", items: [
+        "Mes rendements sont très bas — comment identifier les causes ?",
+        "Je vends mal ma production — comment accéder à de meilleurs marchés ?",
+        "Les routes sont mauvaises et je perds des clients — quelles solutions ?"
+      ]},
+      { titre: "💰 Financement & Organisation", items: [
+        "Comment financer mes intrants sans accès aux banques ?",
+        "Comment me regrouper avec d'autres paysans pour mieux réussir ?",
+        "Où trouver des conseils techniques et un encadrement fiable ?"
+      ]}
+    ]
+  }
+};
 
-  let history = [];
-  let loading = false;
+var SUGS = [
+  "Mes sols sont épuisés, comment les régénérer ?",
+  "Mon bétail manque de fourrage en saison sèche",
+  "Je dépends entièrement de la pluie pour cultiver",
+  "Mes rendements sont très bas cette saison",
+  "Des ravageurs détruisent mes cultures",
+  "Comment financer mes intrants agricoles ?"
+];
 
-  const sugBox = document.getElementById("suggestions");
-  SUGGESTIONS.forEach(s => {
-    const btn = document.createElement("button");
-    btn.className = "suggestion-btn";
-    btn.textContent = s;
-    btn.onclick = () => { showChat(); sendMessage(s); };
-    sugBox.appendChild(btn);
+// ─── ÉTAT ───────────────────────────────────────────────────────
+var histo = [];
+var enCharge = false;
+var consultOK = false;
+var catOuv = null;
+
+// ─── ÉLÉMENTS DOM ───────────────────────────────────────────────
+var elHeroExp   = document.getElementById("hero-exp");
+var elHeroCmp   = document.getElementById("hero-cmp");
+var elHcSub     = document.getElementById("hc-sub");
+var elWelcome   = document.getElementById("welcome-bot");
+var elCatPanel  = document.getElementById("cat-panel");
+var elCatTitle  = document.getElementById("cat-title");
+var elCatChips  = document.getElementById("cat-chips");
+var elChat      = document.getElementById("chat-area");
+var elInputBar  = document.getElementById("input-bar");
+var elStatusPill= document.getElementById("status-pill");
+var elBtnPrint  = document.getElementById("btn-print");
+var elBtnExit   = document.getElementById("btn-exit");
+var elApiInput  = document.getElementById("api-input");
+var elApiStatus = document.getElementById("api-status");
+var elApiSection= document.getElementById("apikey-section");
+var elTextarea  = document.getElementById("user-input");
+var elSendBtn   = document.getElementById("send-btn");
+var elModal     = document.getElementById("modal-sortie");
+
+// ─── CLÉ API ───────────────────────────────────────────────────
+document.getElementById("btn-save-key").addEventListener("click", function() {
+  var v = elApiInput.value.trim();
+  if (!v) { elApiStatus.textContent = "⚠️ Veuillez entrer une clé API"; elApiStatus.className = "api-status err"; return; }
+  if (!v.startsWith("sk-ant")) { elApiStatus.textContent = "⚠️ Clé invalide (doit commencer par sk-ant)"; elApiStatus.className = "api-status err"; return; }
+  CLE_API = v;
+  elApiStatus.textContent = "✅ Clé enregistrée — vous pouvez commencer !";
+  elApiStatus.className = "api-status ok";
+  elApiInput.value = "";
+});
+
+// ─── SUGGESTIONS ───────────────────────────────────────────────
+var boiteSugs = document.getElementById("suggestions");
+SUGS.forEach(function(s) {
+  var btn = document.createElement("button");
+  btn.className = "sug-btn";
+  btn.textContent = s;
+  btn.addEventListener("click", function() { lancer(s); });
+  boiteSugs.appendChild(btn);
+});
+
+// ─── BOUTONS CATÉGORIES ─────────────────────────────────────────
+["cultures","elevage","climat","rendement"].forEach(function(cat) {
+  document.getElementById("btn-" + cat).addEventListener("click", function() {
+    ouvrirCat(cat);
   });
+});
 
-  const textarea = document.getElementById("user-input");
-  textarea.addEventListener("input", () => {
-    textarea.style.height = "auto";
-    textarea.style.height = textarea.scrollHeight + "px";
-    updateSendBtn();
-  });
-  textarea.addEventListener("keydown", e => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-  });
+// ─── BOUTONS HEADER ────────────────────────────────────────────
+document.getElementById("btn-start").addEventListener("click", function() {
+  lancer("Bonjour, je suis un fermier agro-pastoral. J'ai besoin d'aide pour améliorer mes rendements.");
+});
+elBtnPrint.addEventListener("click", imprimer);
+elBtnExit.addEventListener("click", function() { elModal.classList.add("show"); });
+document.getElementById("modal-bg").addEventListener("click", function() { elModal.classList.remove("show"); });
+document.getElementById("btn-continuer").addEventListener("click", function() { elModal.classList.remove("show"); });
+document.getElementById("btn-quitter").addEventListener("click", confirmerSortie);
 
-  function updateSendBtn() {
-    document.getElementById("send-btn").classList.toggle("ready", textarea.value.trim().length > 0 && !loading);
+// ─── TEXTAREA ──────────────────────────────────────────────────
+elTextarea.addEventListener("input", function() {
+  elTextarea.style.height = "auto";
+  elTextarea.style.height = elTextarea.scrollHeight + "px";
+  majEnvoi();
+});
+elTextarea.addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); envoyer(); }
+});
+elSendBtn.addEventListener("click", function() { envoyer(); });
+
+function majEnvoi() {
+  var actif = elTextarea.value.trim().length > 0 && !enCharge;
+  elSendBtn.className = actif ? "on" : "";
+}
+
+// ─── FONCTIONS PRINCIPALES ─────────────────────────────────────
+function verifierCle() {
+  if (!CLE_API) {
+    var k = elApiInput.value.trim();
+    if (k && k.startsWith("sk-ant")) { CLE_API = k; return true; }
+    elApiStatus.textContent = "⚠️ Entrez d'abord votre clé API ci-dessus";
+    elApiStatus.className = "api-status err";
+    elApiInput.focus();
+    return false;
   }
+  return true;
+}
 
-  function showChat() {
-    document.getElementById("welcome").style.display = "none";
-    document.getElementById("chat-area").classList.add("active");
-    document.getElementById("input-bar").classList.add("active");
-  }
+function lancer(texte) {
+  if (!verifierCle()) return;
+  activerChat();
+  envoyer(texte);
+}
 
-  function startChat() {
-    const apiKey = document.getElementById("api-key-input").value.trim();
-    if (!apiKey) {
-      document.getElementById("api-key-input").style.border = "1px solid #e05050";
-      document.getElementById("api-key-input").placeholder = "⚠️ Entrez votre clé API d'abord...";
-      return;
-    }
-    showChat();
-    sendMessage("Bonjour, je suis un fermier agro-pastoral. J'ai besoin d'aide pour améliorer mes rendements.");
-  }
+function activerChat() {
+  if (consultOK) return;
+  consultOK = true;
+  elHeroExp.style.display = "none";
+  elHeroCmp.style.display = "flex";
+  elWelcome.style.display = "none";
+  elCatPanel.classList.remove("show");
+  elChat.classList.add("on");
+  elInputBar.classList.add("on");
+  elStatusPill.style.display = "none";
+  elBtnPrint.classList.add("show");
+  elBtnExit.classList.add("show");
+}
 
-  function appendBubble(role, text) {
-    const chat = document.getElementById("chat-area");
-    const row = document.createElement("div");
-    row.className = `msg-row ${role}`;
-    if (role === "assistant") {
-      const av = document.createElement("div");
-      av.className = "avatar bot"; av.textContent = "🌾";
-      row.appendChild(av);
-    }
-    const bubble = document.createElement("div");
-    bubble.className = `bubble ${role}`;
-    bubble.textContent = text;
-    row.appendChild(bubble);
-    if (role === "user") {
-      const av = document.createElement("div");
-      av.className = "avatar user"; av.textContent = "👨‍🌾";
-      row.appendChild(av);
-    }
-    chat.appendChild(row);
-    row.scrollIntoView({ behavior: "smooth" });
-  }
-
-  function showTyping() {
-    const chat = document.getElementById("chat-area");
-    const row = document.createElement("div");
-    row.className = "msg-row assistant"; row.id = "typing-row";
-    const av = document.createElement("div");
-    av.className = "avatar bot"; av.textContent = "🌾";
-    row.appendChild(av);
-    const bubble = document.createElement("div");
-    bubble.className = "bubble assistant";
-    bubble.innerHTML = '<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-    row.appendChild(bubble);
-    chat.appendChild(row);
-    row.scrollIntoView({ behavior: "smooth" });
-  }
-
-  function hideTyping() {
-    const t = document.getElementById("typing-row");
-    if (t) t.remove();
-  }
-
-  async function sendMessage(forced) {
-    const text = forced || textarea.value.trim();
-    if (!text || loading) return;
-    textarea.value = "";
-    textarea.style.height = "auto";
-    loading = true; updateSendBtn();
-    appendBubble("user", text);
-    history.push({ role: "user", content: text });
-    showTyping();
-    try {
-      const apiKey = document.getElementById("api-key-input") 
-        ? document.getElementById("api-key-input").value.trim() 
-        : "";
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: history,
-        }),
+function ouvrirCat(cat) {
+  var dejaOuvert = catOuv === cat && elCatPanel.classList.contains("show");
+  document.querySelectorAll(".feat-btn").forEach(function(b) { b.classList.remove("active"); });
+  if (dejaOuvert) { elCatPanel.classList.remove("show"); catOuv = null; return; }
+  catOuv = cat;
+  document.getElementById("btn-" + cat).classList.add("active");
+  var data = CATS[cat];
+  elCatTitle.textContent = data.label;
+  elCatChips.innerHTML = "";
+  data.sections.forEach(function(sec) {
+    var lbl = document.createElement("div");
+    lbl.className = "sec-lbl";
+    lbl.textContent = sec.titre;
+    elCatChips.appendChild(lbl);
+    sec.items.forEach(function(question) {
+      var chip = document.createElement("button");
+      chip.className = "cat-chip";
+      chip.textContent = question;
+      chip.addEventListener("click", function() {
+        elCatPanel.classList.remove("show");
+        catOuv = null;
+        document.querySelectorAll(".feat-btn").forEach(function(b) { b.classList.remove("active"); });
+        lancer(question);
       });
-      const data = await res.json();
-      const reply = data.content?.[0]?.text || "Désolé, je n'ai pas pu répondre. Réessayez.";
-      hideTyping();
-      appendBubble("assistant", reply);
-      history.push({ role: "assistant", content: reply });
-    } catch {
-      hideTyping();
-      appendBubble("assistant", "⚠️ Erreur de connexion. Vérifiez votre internet et réessayez.");
-    }
-    loading = false; updateSendBtn();
-  }
+      elCatChips.appendChild(chip);
+    });
+  });
+  elCatPanel.classList.remove("show");
+  setTimeout(function() { elCatPanel.classList.add("show"); }, 10);
+}
+
+function confirmerSortie() {
+  elModal.classList.remove("show");
+  histo = []; enCharge = false; consultOK = false; catOuv = null; CLE_API = "";
+  elHeroExp.style.display = "";
+  elHeroCmp.style.display = "none";
+  elWelcome.style.display = "";
+  elChat.classList.remove("on"); elChat.innerHTML = "";
+  elInputBar.classList.remove("on");
+  elCatPanel.classList.remove("show");
+  document.querySelectorAll(".feat-btn").forEach(function(b) { b.classList.remove("active"); });
+  elTextarea.value = "";
+  elStatusPill.style.display = "";
+  elBtnPrint.classList.remove("show");
+  elBtnExit.classList.remove("show");
+  elApiStatus.textContent = "Entrez votre clé API pour recommencer";
+  elApiStatus.className = "api-status";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  majEnvoi();
+}
+
+// ─── CHAT AFFICHAGE ────────────────────────────────────────────
+function ajouterBulle(role, texte) {
+  var row = document.createElement("div");
+  row.className = "msg-row " + role;
+  if (role === "bot") { var a = document.createElement("div"); a.className = "av bot"; a.textContent = "🌾"; row.appendChild(a); }
+  var b = document.createElement("div"); b.className = "bub " + role; b.textContent = texte; row.appendChild(b);
+  if (role === "user") { var a2 = document.createElement("div"); a2.className = "av user"; a2.textContent = "👨‍🌾"; row.appendChild(a2); }
+  elChat.appendChild(row);
+  row.scrollIntoView({ behavior: "smooth" });
+}
+
+function showTyping() {
+  var row = document.createElement("div"); row.className = "msg-row bot"; row.id = "typing-row";
+  var a = document.createElement("div"); a.className = "av bot"; a.textContent = "🌾"; row.appendChild(a);
+  var b = document.createElement("div"); b.className = "bub bot";
+  b.innerHTML = '<div class="tw"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  row.appendChild(b); elChat.appendChild(row); row.scrollIntoView({ behavior: "smooth" });
+}
+
+function hideTyping() { var el = document.getElementById("typing-row"); if (el) el.remove(); }
+
+function setSub(t) { if (elHcSub) elHcSub.textContent = t; }
+
+// ─── ENVOI API ─────────────────────────────────────────────────
+function envoyer(force) {
+  var texte = force !== undefined ? force : elTextarea.value.trim();
+  if (!texte || enCharge) return;
+  elTextarea.value = ""; elTextarea.style.height = "auto";
+  enCharge = true; majEnvoi();
+  ajouterBulle("user", texte);
+  histo.push({ role: "user", content: texte });
+  showTyping();
+  setSub("En train de répondre…");
+
+  fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": CLE_API,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      system: PROMPT,
+      messages: histo
+    })
+  }).then(function(r) {
+    return r.json();
+  }).then(function(d) {
+    var rep = (d.content && d.content[0] && d.content[0].text)
+      ? d.content[0].text
+      : "Désolé, je n'ai pas pu répondre. Réessayez.";
+    hideTyping(); ajouterBulle("bot", rep);
+    histo.push({ role: "assistant", content: rep });
+    setSub("Choisissez un thème ou posez votre question");
+    enCharge = false; majEnvoi();
+  }).catch(function(err) {
+    hideTyping(); ajouterBulle("bot", "⚠️ Erreur de connexion. Vérifiez votre internet et réessayez.");
+    setSub("Choisissez un thème ou posez votre question");
+    enCharge = false; majEnvoi();
+  });
+}
+
+// ─── IMPRESSION ────────────────────────────────────────────────
+function imprimer() {
+  if (histo.length === 0) return;
+  var now = new Date();
+  var ds = now.toLocaleDateString("fr-FR", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+  var ts = now.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" });
+  var lignes = "";
+  histo.forEach(function(m) {
+    var u = m.role === "user";
+    var txt = m.content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+    lignes += '<div class="mr '+(u?"mu":"mb")+'"><div class="mm"><span>'+(u?"👨‍🌾":"🌾")+'</span><span class="sn">'+(u?"Vous":"AgroYield")+'</span></div><div class="bb">'+txt+'</div></div>';
+  });
+  var nu = histo.filter(function(m){return m.role==="user";}).length;
+  var nb = histo.filter(function(m){return m.role==="assistant";}).length;
+  var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>AgroYield – Rapport</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"DM Sans",sans-serif;background:#faf8f2;color:#1c1008;padding:40px 20px}.page{max-width:680px;margin:0 auto}.rh{display:flex;justify-content:space-between;border-bottom:2px solid #2a4a1a;padding-bottom:20px;margin-bottom:28px}.rl{display:flex;align-items:center;gap:12px}.lc{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#4a8c28,#2a4a1a);display:flex;align-items:center;justify-content:center;font-size:22px}.li h1{font-family:"Cormorant Garamond",serif;font-size:26px;font-weight:700;font-style:italic;line-height:1}.li p{font-size:10px;color:#6b9b42;letter-spacing:2px;text-transform:uppercase;margin-top:3px}.rm{text-align:right;font-size:12px;color:#5a4020}.rt{text-align:center;margin-bottom:24px;padding:16px 20px;background:#f0f8e4;border:1px solid #c8e0a0;border-radius:12px}.rt h2{font-family:"Cormorant Garamond",serif;font-size:18px;color:#1c3010;margin-bottom:4px}.rt p{font-size:12px;color:#6a8040}.conv{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}.mr{display:flex;flex-direction:column;gap:5px}.mu{align-items:flex-end}.mb{align-items:flex-start}.mm{display:flex;align-items:center;gap:6px}.sn{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#6a5030}.mu .bb{background:linear-gradient(135deg,#3d6b20,#2a4d14);color:#f0f8e0;border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:13px;line-height:1.65;max-width:80%}.mb .bb{background:#fff;color:#2a1c08;border:1px solid #d0e8b0;border-radius:16px 16px 16px 4px;padding:10px 14px;font-size:13px;line-height:1.65;max-width:85%}.rf{border-top:1px solid #d0c090;padding-top:12px;display:flex;justify-content:space-between;font-size:10.5px;color:#8a7040}.br{font-family:"Cormorant Garamond",serif;font-style:italic;color:#4a8c28;font-weight:600;font-size:14px}@media print{body{padding:20px}.mu .bb{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="page"><div class="rh"><div class="rl"><div class="lc">🌾</div><div class="li"><h1>AgroYield</h1><p>Assistant IA Agricole</p></div></div><div class="rm"><div>📅 '+ds+'</div><div style="margin-top:3px">🕐 '+ts+'</div></div></div><div class="rt"><h2>🌱 Rapport de consultation agro-pastorale</h2><p>'+nu+' question(s) · '+nb+' réponse(s)</p></div><div class="conv">'+lignes+'</div><div class="rf"><p>Généré par AgroYield IA</p><span class="br">AgroYield</span></div></div><scr'+'ipt>window.onload=function(){window.print()}<\/scr'+'ipt></body></html>';
+  var win = window.open("","_blank");
+  if (win) { win.document.write(html); win.document.close(); }
+}
+
+})(); // fin IIFE
 </script>
 </body>
 </html>
