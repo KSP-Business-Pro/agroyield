@@ -232,7 +232,7 @@ header{flex-shrink:0;padding:20px 0 12px;display:flex;align-items:center;gap:13p
 "use strict";
 
 // ─── CONFIGURATION ───────────────────────────────────────────────
-var CLE_API = "";
+var CLE_API = "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";
 
 var PROMPT = "Tu es AgroYield, un assistant IA expert en agriculture agro-pastorale africaine.\n\nLes 15 problèmes clés :\n1. Dépendance à la pluie\n2. Faible fertilité des sols\n3. Accès limité aux semences améliorées\n4. Intrants coûteux\n5. Rendements bas\n6. Ravageurs et maladies\n7. Faible irrigation\n8. Pertes post-récolte\n9. Mauvais accès marchés\n10. Faible transformation locale\n11. Déficit fourrager\n12. Maladies animales\n13. Faible productivité laitière\n14. Conflits terre/eau\n15. Faible financement et organisation\n\nConseils pratiques adaptés à l'Afrique, moins de 160 mots par réponse, solutions sans grands moyens, encourager le paysan. Commence par un accueil chaleureux.";
 
@@ -390,14 +390,6 @@ function majEnvoi() {
 
 // ─── FONCTIONS PRINCIPALES ─────────────────────────────────────
 function verifierCle() {
-  if (!CLE_API) {
-    var k = elApiInput.value.trim();
-    if (k && k.startsWith("sk-ant")) { CLE_API = k; return true; }
-    elApiStatus.textContent = "⚠️ Entrez d'abord votre clé API ci-dessus";
-    elApiStatus.className = "api-status err";
-    elApiInput.focus();
-    return false;
-  }
   return true;
 }
 
