@@ -802,10 +802,12 @@ function stopMic(){
 // SYNTHÈSE VOCALE
 function nettoyerPourVoix(txt){
   return txt
-    .replace(/[*_#`~]/g," ")
-    .replace(/[•·▲▼●►]/g," ")
-    .replace(/[^\w\sÀ-ÿ''\-]/g," ")
-    .replace(/\s{2,}/g," ")
+    .replace(/[*_#`~]/g," ")           // symboles markdown → espace
+    .replace(/[•·►▶▲▼●◆]/g,", ")      // puces → pause courte
+    .replace(/—|–/g,", ")              // tirets longs → pause
+    .replace(/\.\.\./g,". ")           // ellipses → point
+    .replace(/([.!?;,:])\1+/g,"$1")   // ponctuation doublée → simple
+    .replace(/\s{2,}/g," ")            // espaces multiples → un seul
     .trim();
 }
 function lireTexte(txt,btn){
