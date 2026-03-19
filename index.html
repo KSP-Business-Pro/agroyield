@@ -5,550 +5,1018 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AgroYield</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.cinetpay.com/seamless/main.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--soil:#1c1008;--bark:#3d2a0f;--moss:#2a4a1a;--leaf:#4a8c28;--lime:#7ec850;--sun:#f0b840;--gold:#d4902a;--ivory:#f5ead0}
-html,body{height:100%}
-body{background:var(--soil);font-family:'DM Sans',sans-serif;color:var(--ivory);overflow-x:hidden}
-.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(74,140,40,.20) 0%,transparent 65%),radial-gradient(ellipse 60% 50% at 85% 90%,rgba(42,74,26,.28) 0%,transparent 60%)}
-.orb{position:absolute;border-radius:50%;filter:blur(80px);animation:drift 20s ease-in-out infinite alternate}
-.o1{width:350px;height:350px;background:rgba(74,140,40,.10);top:-80px;left:-80px}
-.o2{width:280px;height:280px;background:rgba(240,184,64,.06);bottom:10%;right:-60px;animation-duration:26s;animation-delay:-9s}
-@keyframes drift{from{transform:translate(0,0)}to{transform:translate(28px,18px)}}
-#app{position:relative;z-index:1;max-width:640px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:0 16px}
-header{flex-shrink:0;padding:20px 0 12px;display:flex;align-items:center;gap:13px;animation:slideDown .7s cubic-bezier(.16,1,.3,1) both}
-@keyframes slideDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
-.logo-ring{position:relative;flex-shrink:0;width:50px;height:50px}
-.logo-ring::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(#7ec850,#f0b840,#4a8c28,#7ec850);animation:spin 8s linear infinite;opacity:.6}
-.logo-ring::after{content:'';position:absolute;inset:2px;border-radius:50%;background:linear-gradient(135deg,#3d2a0f,#2a4a1a)}
-.logo-inner{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;font-size:22px}
+:root{--soil:#1c1008;--bark:#3d2a0f;--moss:#2a4a1a;--leaf:#4a8c28;--lime:#7ec850;--sun:#f0b840;--gold:#d4902a;--ivory:#f5ead0;--red:#e05040;--blue:#4a90d9}
+html,body{height:100%;overflow:hidden}
+body{background:var(--soil);font-family:'DM Sans',sans-serif;color:var(--ivory)}
+#splash{position:fixed;inset:0;z-index:999;background:linear-gradient(160deg,#0e1f08,#1c3a10,#0a1505);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .8s ease}
+#splash.out{opacity:0;pointer-events:none}
+.splash-ring{position:relative;width:90px;height:90px}
+.splash-ring::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(#7ec850,#f0b840,#4a8c28,#7ec850);animation:spin 3s linear infinite;opacity:.8}
+.splash-ring::after{content:'';position:absolute;inset:4px;border-radius:50%;background:linear-gradient(135deg,#1c3a10,#0a1505)}
+.splash-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px;z-index:2}
+.splash-title{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;font-style:italic;background:linear-gradient(135deg,#f5ead0,#f0b840);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.splash-sub{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:rgba(240,184,64,.6)}
+.splash-bar{width:140px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;margin-top:10px}
+.splash-prog{height:100%;background:linear-gradient(90deg,var(--lime),var(--sun));border-radius:2px;animation:load 2.2s ease forwards}
+@keyframes load{from{width:0}to{width:100%}}
 @keyframes spin{to{transform:rotate(360deg)}}
-.logo-text h1{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;font-style:italic;background:linear-gradient(135deg,#f5ead0 40%,#f0b840);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
-.logo-text p{font-size:9.5px;font-weight:500;color:#d4902a;letter-spacing:2.5px;text-transform:uppercase;margin-top:3px}
-.hdr-r{margin-left:auto;display:flex;align-items:center;gap:7px}
-.status-pill{display:flex;align-items:center;gap:6px;background:rgba(126,200,80,.08);border:1px solid rgba(126,200,80,.22);border-radius:30px;padding:5px 13px}
-.sdot{width:6px;height:6px;border-radius:50%;background:#7ec850;box-shadow:0 0 8px #7ec850;animation:blink 2s ease-in-out infinite}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(74,140,40,.18) 0%,transparent 65%),radial-gradient(ellipse 60% 50% at 85% 90%,rgba(42,74,26,.22) 0%,transparent 60%)}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);animation:drift 20s ease-in-out infinite alternate}
+.o1{width:300px;height:300px;background:rgba(74,140,40,.09);top:-60px;left:-60px}
+.o2{width:220px;height:220px;background:rgba(240,184,64,.05);bottom:80px;right:-50px;animation-duration:26s;animation-delay:-9s}
+@keyframes drift{from{transform:translate(0,0)}to{transform:translate(22px,14px)}}
+#app{position:relative;z-index:1;max-width:640px;margin:0 auto;height:100vh;display:flex;flex-direction:column}
+header{flex-shrink:0;padding:14px 16px 10px;display:flex;align-items:center;gap:11px;border-bottom:1px solid rgba(245,234,208,.07)}
+.logo-ring{position:relative;flex-shrink:0;width:42px;height:42px}
+.logo-ring::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(#7ec850,#f0b840,#4a8c28,#7ec850);animation:spin 8s linear infinite;opacity:.55}
+.logo-ring::after{content:'';position:absolute;inset:2px;border-radius:50%;background:linear-gradient(135deg,#3d2a0f,#2a4a1a)}
+.logo-inner{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text h1{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;font-style:italic;background:linear-gradient(135deg,#f5ead0 40%,#f0b840);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.logo-text p{font-size:8.5px;color:#d4902a;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:6px}
+.status-pill{display:flex;align-items:center;gap:5px;background:rgba(126,200,80,.08);border:1px solid rgba(126,200,80,.22);border-radius:30px;padding:4px 11px}
+.sdot{width:5px;height:5px;border-radius:50%;background:#7ec850;box-shadow:0 0 6px #7ec850;animation:blink 2s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
-.status-pill span{font-size:11px;color:#7ec850;font-weight:500}
-.btn-hdr{display:none;align-items:center;gap:6px;border-radius:30px;padding:5px 13px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .22s}
+.status-pill span{font-size:10px;color:#7ec850;font-weight:500}
+.btn-hdr{display:none;align-items:center;gap:5px;border-radius:30px;padding:4px 11px;font-size:10px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
 .btn-hdr.show{display:flex}
 .btn-print{background:rgba(240,184,64,.10);border:1px solid rgba(240,184,64,.22);color:rgba(240,184,64,.85)}
 .btn-exit{background:rgba(220,60,50,.10);border:1px solid rgba(220,60,50,.25);color:rgba(240,140,130,.85)}
-.divider{flex-shrink:0;height:1px;margin:0 0 14px;background:linear-gradient(90deg,transparent,rgba(240,184,64,.22) 30%,rgba(126,200,80,.22) 70%,transparent)}
-/* HERO */
-#hero-panel{flex-shrink:0;margin-bottom:13px;animation:fadeUp .8s cubic-bezier(.16,1,.3,1) .15s both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
-.hero-card{background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.10);border-radius:22px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 8px 40px rgba(0,0,0,.35);position:relative}
+#content{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 16px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(126,200,80,.18);border-radius:2px}
+.screen{display:none;padding-bottom:12px}
+.screen.active{display:block;animation:fadeUp .35s cubic-bezier(.16,1,.3,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+#nav{flex-shrink:0;display:flex;background:rgba(28,16,8,.96);border-top:1px solid rgba(245,234,208,.08);backdrop-filter:blur(12px)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 10px;border:none;background:transparent;cursor:pointer;position:relative;transition:all .18s}
+.nav-btn::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--lime);border-radius:0 0 3px 3px;opacity:0;transition:opacity .18s}
+.nav-btn.active::before{opacity:1}
+.nav-ico{font-size:19px;transition:transform .18s}
+.nav-btn.active .nav-ico{transform:scale(1.12)}
+.nav-lbl{font-size:9px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:rgba(245,234,208,.28);transition:color .18s}
+.nav-btn.active .nav-lbl{color:var(--lime)}
+.card{background:rgba(245,234,208,.05);border:1px solid rgba(245,234,208,.09);border-radius:16px;padding:14px;margin-bottom:11px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--lime),var(--sun),transparent)}
+.card-title{font-size:9.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:11px;display:flex;align-items:center;gap:7px}
+.welcome-msg{text-align:center;padding:18px 0 12px}
+.welcome-msg .ico{font-size:42px;display:block;margin-bottom:10px;animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.welcome-msg h2{font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:600}
+.welcome-msg h2 em{color:var(--sun);font-style:normal}
+.welcome-msg p{font-size:12px;color:rgba(245,234,208,.50);margin-top:5px;line-height:1.6}
+.meteo-card{background:linear-gradient(135deg,rgba(74,144,217,.10),rgba(42,74,26,.15));border:1px solid rgba(74,144,217,.20);border-radius:16px;padding:13px 15px;margin-bottom:11px;display:flex;align-items:center;gap:13px}
+.meteo-ico{font-size:34px}
+.meteo-info h3{font-size:14px;font-weight:600;color:var(--ivory)}
+.meteo-info p{font-size:11px;color:rgba(245,234,208,.50);margin-top:2px}
+.meteo-alerte{font-size:10.5px;color:var(--sun);margin-top:5px;background:rgba(240,184,64,.10);border:1px solid rgba(240,184,64,.18);border-radius:7px;padding:3px 9px;display:inline-block}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quick-btn{background:rgba(245,234,208,.04);border:1px solid rgba(245,234,208,.09);border-radius:13px;padding:13px 11px;cursor:pointer;text-align:center;transition:all .2s;position:relative;overflow:hidden}
+.quick-btn::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .18s;background:rgba(126,200,80,.07)}
+.quick-btn:hover::before{opacity:1}
+.quick-btn .qi{font-size:24px;display:block;margin-bottom:6px}
+.quick-btn .ql{font-size:11px;font-weight:600;color:rgba(245,234,208,.70)}
+.quick-btn .qd{font-size:10px;color:rgba(245,234,208,.32);margin-top:2px}
+.alerte-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(245,234,208,.06)}
+.alerte-item:last-child{border-bottom:none}
+.alerte-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.alerte-dot.high{background:var(--red)}.alerte-dot.med{background:var(--sun)}.alerte-dot.low{background:var(--lime)}
+.alerte-txt{font-size:12.5px;color:rgba(245,234,208,.72);line-height:1.5}
+.alerte-txt strong{color:var(--ivory);display:block;font-size:12px;margin-bottom:1px}
+#hero-panel{margin:12px 0 10px}
+.hero-card{background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.10);border-radius:18px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 6px 28px rgba(0,0,0,.28);position:relative}
 .hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#7ec850,#f0b840,transparent)}
-#hero-exp{padding:28px 24px 22px;text-align:center}
-.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(240,184,64,.10);border:1px solid rgba(240,184,64,.22);border-radius:30px;padding:4px 14px;font-size:10px;font-weight:600;color:#f0b840;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:18px}
-.hero-icon{font-size:50px;display:block;margin-bottom:16px;animation:float 4s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-#hero-exp h2{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;margin-bottom:10px}
+#hero-exp{padding:22px 20px 18px;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(240,184,64,.10);border:1px solid rgba(240,184,64,.22);border-radius:30px;padding:3px 12px;font-size:9.5px;font-weight:600;color:#f0b840;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px}
+.hero-icon{font-size:42px;display:block;margin-bottom:12px;animation:float 4s ease-in-out infinite}
+#hero-exp h2{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;margin-bottom:8px}
 #hero-exp h2 em{color:#f0b840;font-style:normal}
-#hero-exp p{font-size:13px;font-weight:300;color:rgba(245,234,208,.65);line-height:1.75;max-width:420px;margin:0 auto}
+#hero-exp p{font-size:12px;font-weight:300;color:rgba(245,234,208,.58);line-height:1.7}
 #hero-exp p strong{color:#7ec850;font-weight:500}
-#hero-cmp{display:none;padding:13px 20px 0;align-items:center;gap:12px}
-.hc-ico{font-size:26px}
-.hc-txt h3{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:#f5ead0;line-height:1}
-.hc-txt p{font-size:11px;color:rgba(245,234,208,.45);margin-top:2px}
-/* CATÉGORIE BUTTONS */
+#hero-cmp{display:none;padding:10px 16px 0;align-items:center;gap:10px}
+.hc-ico{font-size:22px}
+.hc-txt h3{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#f5ead0;line-height:1}
+.hc-txt p{font-size:10px;color:rgba(245,234,208,.38);margin-top:2px}
 .feat-row{display:flex;border-top:1px solid rgba(245,234,208,.07)}
-.feat-btn{flex:1;padding:14px 8px;text-align:center;cursor:pointer;border:none;background:transparent;font-family:'DM Sans',sans-serif;transition:all .22s;position:relative;overflow:hidden}
+.feat-btn{flex:1;padding:11px 5px;text-align:center;cursor:pointer;border:none;background:transparent;font-family:'DM Sans',sans-serif;transition:all .2s;position:relative;overflow:hidden}
 .feat-btn:not(:last-child){border-right:1px solid rgba(245,234,208,.07)}
-.feat-btn::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .22s;background:rgba(126,200,80,.10)}
-.feat-btn:hover::before{opacity:1}
-.feat-btn.active::before{opacity:1}
+.feat-btn::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;background:rgba(126,200,80,.09)}
+.feat-btn:hover::before,.feat-btn.active::before{opacity:1}
 .feat-btn.active{box-shadow:inset 0 -2px 0 #7ec850}
-.feat-ico{font-size:20px;margin-bottom:5px;display:block;position:relative;z-index:1}
-.feat-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:1px;font-weight:600;color:rgba(245,234,208,.40);display:block;position:relative;z-index:1;transition:color .2s}
+.feat-ico{font-size:17px;margin-bottom:4px;display:block;position:relative;z-index:1}
+.feat-lbl{font-size:8.5px;text-transform:uppercase;letter-spacing:.8px;font-weight:600;color:rgba(245,234,208,.32);display:block;position:relative;z-index:1;transition:color .18s}
 .feat-btn:hover .feat-lbl,.feat-btn.active .feat-lbl{color:rgba(245,234,208,.85)}
-/* CLÉ API */
-#apikey-section{margin-bottom:18px;animation:fadeUp .8s cubic-bezier(.16,1,.3,1) .2s both}
-.apikey-card{background:rgba(240,184,64,.06);border:1px solid rgba(240,184,64,.18);border-radius:16px;padding:16px 18px}
-.apikey-card label{display:block;font-size:10px;font-weight:600;color:#d4902a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
-.apikey-row{display:flex;gap:8px;align-items:center}
-#api-input{flex:1;background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.15);border-radius:10px;padding:9px 12px;color:#f5ead0;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
-#api-input:focus{border-color:rgba(240,184,64,.35)}
-#api-input::placeholder{color:rgba(245,234,208,.20)}
-.btn-save{padding:9px 16px;background:linear-gradient(135deg,#3d7a20,#2a5514);border:none;border-radius:10px;color:#f5ead0;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .2s}
+#cat-panel{display:none;margin-bottom:9px}
+#cat-panel.show{display:block;animation:panelIn .26s cubic-bezier(.16,1,.3,1) both}
+@keyframes panelIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.cat-inner{background:rgba(245,234,208,.03);border:1px solid rgba(245,234,208,.09);border-radius:13px;padding:10px 12px 8px}
+.cat-title{font-size:9.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#d4902a;margin-bottom:7px}
+#cat-chips{display:flex;flex-direction:column;gap:4px}
+.sec-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:rgba(240,184,64,.58);margin:6px 0 3px 2px}
+.cat-chip{width:100%;background:rgba(245,234,208,.05);border:1px solid rgba(245,234,208,.09);border-radius:10px;padding:8px 12px;color:rgba(245,234,208,.58);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;line-height:1.4;transition:all .18s}
+.cat-chip:hover{background:rgba(126,200,80,.10);border-color:rgba(126,200,80,.20);color:#f5ead0;padding-left:16px}
+#welcome-bot{margin-bottom:6px}
+.apikey-card{background:rgba(240,184,64,.06);border:1px solid rgba(240,184,64,.18);border-radius:13px;padding:13px 15px;margin-bottom:11px}
+.apikey-card label{display:block;font-size:9.5px;font-weight:600;color:#d4902a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px}
+.apikey-row{display:flex;gap:7px;align-items:center}
+.api-inp{flex:1;background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.14);border-radius:9px;padding:8px 11px;color:#f5ead0;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .18s}
+.api-inp:focus{border-color:rgba(240,184,64,.35)}
+.api-inp::placeholder{color:rgba(245,234,208,.18)}
+.btn-save{padding:8px 13px;background:linear-gradient(135deg,#3d7a20,#2a5514);border:none;border-radius:9px;color:#f5ead0;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s;white-space:nowrap}
 .btn-save:hover{transform:translateY(-1px)}
-.api-status{font-size:11px;margin-top:7px;color:rgba(245,234,208,.35)}
-.api-status.ok{color:#7ec850}
-.api-status.err{color:#e87060}
-/* PANEL CATÉGORIE */
-#cat-panel{display:none;flex-shrink:0;margin-bottom:10px}
-#cat-panel.show{display:block;animation:panelIn .32s cubic-bezier(.16,1,.3,1) both}
-@keyframes panelIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
-.cat-inner{background:rgba(245,234,208,.03);border:1px solid rgba(245,234,208,.10);border-radius:16px;padding:12px 14px 10px;backdrop-filter:blur(8px)}
-.cat-title{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#d4902a;margin-bottom:9px}
-#cat-chips{display:flex;flex-direction:column;gap:5px}
-.sec-lbl{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:rgba(240,184,64,.65);margin:8px 0 4px 2px}
-.cat-chip{width:100%;background:rgba(245,234,208,.05);border:1px solid rgba(245,234,208,.10);border-radius:12px;padding:9px 14px;color:rgba(245,234,208,.62);font-size:12.5px;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;line-height:1.4;transition:all .2s}
-.cat-chip:hover{background:rgba(126,200,80,.12);border-color:rgba(126,200,80,.22);color:#f5ead0;padding-left:18px}
-/* ACCUEIL BAS */
-#welcome-bot{animation:fadeUp .85s cubic-bezier(.16,1,.3,1) .3s both}
-.btn-start{width:100%;margin-bottom:18px;background:linear-gradient(135deg,#3d7a20 0%,#2a5514 60%,#3d7a20 100%);background-size:200% 100%;border:none;border-radius:14px;padding:15px 28px;color:#f5ead0;font-size:14.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 6px 24px rgba(74,140,40,.35);transition:all .3s cubic-bezier(.16,1,.3,1)}
-.btn-start:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(74,140,40,.45)}
-.sec-div{display:flex;align-items:center;gap:10px;font-size:10px;font-weight:600;color:#d4902a;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
-.sec-div::before,.sec-div::after{content:'';flex:1;height:1px;background:rgba(240,184,64,.22)}
-.suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
-.sug-btn{background:rgba(245,234,208,.04);border:1px solid rgba(245,234,208,.09);border-radius:22px;padding:8px 14px;color:rgba(245,234,208,.52);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .22s}
-.sug-btn:hover{background:rgba(126,200,80,.10);border-color:rgba(126,200,80,.22);color:#f5ead0;transform:translateY(-1px)}
-/* CHAT */
-#chat-area{flex:1;display:none;flex-direction:column;gap:14px;overflow-y:auto;padding:4px 0 8px}
+.api-status{font-size:10.5px;margin-top:6px;color:rgba(245,234,208,.32)}
+.api-status.ok{color:#7ec850}.api-status.err{color:#e87060}
+.btn-start{width:100%;margin-bottom:13px;background:linear-gradient(135deg,#3d7a20,#2a5514);border:none;border-radius:12px;padding:13px 22px;color:#f5ead0;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 5px 18px rgba(74,140,40,.30);transition:all .22s}
+.btn-start:hover{transform:translateY(-2px)}
+.sec-div{display:flex;align-items:center;gap:8px;font-size:9.5px;font-weight:600;color:#d4902a;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+.sec-div::before,.sec-div::after{content:'';flex:1;height:1px;background:rgba(240,184,64,.18)}
+.suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+.sug-btn{background:rgba(245,234,208,.04);border:1px solid rgba(245,234,208,.08);border-radius:20px;padding:7px 12px;color:rgba(245,234,208,.48);font-size:11.5px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.sug-btn:hover{background:rgba(126,200,80,.09);border-color:rgba(126,200,80,.20);color:#f5ead0;transform:translateY(-1px)}
+#chat-area{flex:1;display:none;flex-direction:column;gap:11px;padding:5px 0}
 #chat-area.on{display:flex}
-.msg-row{display:flex;align-items:flex-end;gap:9px}
-.msg-row.user{justify-content:flex-end}
-.msg-row.bot{justify-content:flex-start}
-.av{width:32px;height:32px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px}
+.msg-row{display:flex;align-items:flex-end;gap:8px}
+.msg-row.user{justify-content:flex-end}.msg-row.bot{justify-content:flex-start}
+.av{width:28px;height:28px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px}
 .av.bot{background:linear-gradient(135deg,#3d2a0f,#2a4a1a);border:1px solid rgba(126,200,80,.22)}
 .av.user{background:linear-gradient(135deg,#3a2810,#5a3c18);border:1px solid rgba(240,184,64,.20)}
-.bub{max-width:76%;padding:12px 16px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;animation:bubPop .32s cubic-bezier(.16,1,.3,1) both}
-@keyframes bubPop{from{opacity:0;transform:scale(.92) translateY(5px)}to{opacity:1;transform:none}}
-.bub.user{background:linear-gradient(135deg,#3d6b20,#2a4d14);border-radius:20px 20px 4px 20px;color:rgba(245,234,208,.95);border:1px solid rgba(126,200,80,.22)}
-.bub.bot{background:rgba(245,234,208,.04);border:1px solid rgba(245,234,208,.10);border-radius:20px 20px 20px 4px;color:rgba(245,234,208,.88)}
-.tw{display:flex;align-items:center;gap:5px;padding:13px 17px}
-.dot{width:6px;height:6px;border-radius:50%;background:#7ec850;animation:bounce 1.3s ease-in-out infinite}
-.dot:nth-child(2){animation-delay:.17s;background:#f0b840}
-.dot:nth-child(3){animation-delay:.34s}
-@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.3}40%{transform:translateY(-6px);opacity:1}}
-/* INPUT */
-#input-bar{display:none;flex-shrink:0;padding:10px 0 22px;position:sticky;bottom:0}
-#input-bar::before{content:'';position:absolute;inset:-30px -20px 0;background:linear-gradient(0deg,#1c1008 55%,transparent);pointer-events:none}
+.bub{max-width:78%;padding:10px 14px;font-size:13px;line-height:1.7;white-space:pre-wrap;animation:bubPop .26s cubic-bezier(.16,1,.3,1) both}
+@keyframes bubPop{from{opacity:0;transform:scale(.92) translateY(4px)}to{opacity:1;transform:none}}
+.bub.user{background:linear-gradient(135deg,#3d6b20,#2a4d14);border-radius:18px 18px 4px 18px;color:rgba(245,234,208,.95);border:1px solid rgba(126,200,80,.22)}
+.bub.bot{background:rgba(245,234,208,.04);border:1px solid rgba(245,234,208,.10);border-radius:18px 18px 18px 4px;color:rgba(245,234,208,.88)}
+.bub-actions{display:flex;gap:5px;margin-top:6px}
+.bub-act-btn{background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.10);border-radius:18px;padding:4px 10px;font-size:9.5px;color:rgba(245,234,208,.42);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .16s}
+.bub-act-btn:hover{background:rgba(126,200,80,.09);border-color:rgba(126,200,80,.18);color:rgba(245,234,208,.78)}
+.bub-act-btn.speak-on{color:var(--lime);border-color:rgba(126,200,80,.35)}
+.tw{display:flex;align-items:center;gap:4px;padding:11px 14px}
+.dot{width:5px;height:5px;border-radius:50%;background:#7ec850;animation:bounce 1.3s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.17s;background:#f0b840}.dot:nth-child(3){animation-delay:.34s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.3}40%{transform:translateY(-5px);opacity:1}}
+#input-bar{display:none;flex-shrink:0;padding:8px 0 14px;position:sticky;bottom:0}
+#input-bar::before{content:'';position:absolute;inset:-22px -16px 0;background:linear-gradient(0deg,var(--soil) 55%,transparent);pointer-events:none}
 #input-bar.on{display:block}
-.input-wrap{position:relative;display:flex;align-items:flex-end;gap:9px;background:rgba(255,255,255,.05);border:1px solid rgba(245,234,208,.12);border-radius:18px;padding:9px 9px 9px 17px;transition:border-color .2s}
-.input-wrap:focus-within{border-color:rgba(126,200,80,.28)}
-#user-input{flex:1;background:transparent;border:none;outline:none;color:#f5ead0;font-size:13.5px;font-family:'DM Sans',sans-serif;resize:none;line-height:1.55;padding:4px 0;min-height:30px;max-height:110px}
-#user-input::placeholder{color:rgba(245,234,208,.20)}
-#send-btn{width:40px;height:40px;flex-shrink:0;border-radius:12px;border:1px solid rgba(245,234,208,.09);background:rgba(245,234,208,.05);color:rgba(245,234,208,.25);cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;font-size:16px}
-#send-btn.on{background:linear-gradient(135deg,#4a8c28,#2a5e10);border-color:rgba(126,200,80,.3);color:#f5ead0}
-.footer-note{text-align:center;color:rgba(245,234,208,.15);font-size:10px;margin-top:7px}
-.footer-note span{color:rgba(240,184,64,.32)}
-/* MODAL */
-.modal-ov{display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center}
+.input-wrap{position:relative;display:flex;align-items:flex-end;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(245,234,208,.12);border-radius:16px;padding:8px 8px 8px 14px;transition:border-color .18s}
+.input-wrap:focus-within{border-color:rgba(126,200,80,.26)}
+#user-input{flex:1;background:transparent;border:none;outline:none;color:#f5ead0;font-size:13px;font-family:'DM Sans',sans-serif;resize:none;line-height:1.55;padding:3px 0;min-height:28px;max-height:100px}
+#user-input::placeholder{color:rgba(245,234,208,.18)}
+.input-btns{display:flex;gap:5px;align-items:flex-end;flex-shrink:0}
+.ibtn{height:36px;border-radius:10px;border:1px solid rgba(245,234,208,.09);background:rgba(245,234,208,.05);color:rgba(245,234,208,.26);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:15px;padding:0 10px;white-space:nowrap}
+.ibtn#send-btn{width:36px;padding:0}
+.ibtn.on{background:linear-gradient(135deg,#4a8c28,#2a5e10);border-color:rgba(126,200,80,.30);color:#f5ead0}
+.ibtn.mic-on{background:linear-gradient(135deg,#8b2020,#5c1010);border-color:rgba(220,60,50,.35);color:#ffccc8;animation:pulseR 1s ease-in-out infinite}
+@keyframes pulseR{0%,100%{box-shadow:0 0 0 0 rgba(220,60,50,.4)}50%{box-shadow:0 0 0 6px rgba(220,60,50,0)}}
+.footer-note{text-align:center;color:rgba(245,234,208,.12);font-size:9.5px;margin-top:5px}
+.footer-note span{color:rgba(240,184,64,.26)}
+/* POLICE GLOBALE 20px */
+body{background:var(--soil);font-family:'DM Sans',sans-serif;color:var(--ivory);font-size:20px}
+.diag-zone{background:rgba(245,234,208,.03);border:2px dashed rgba(245,234,208,.12);border-radius:16px;padding:26px 18px;text-align:center;margin-bottom:12px;cursor:pointer;position:relative;transition:all .18s}
+.diag-zone:hover{border-color:rgba(126,200,80,.30);background:rgba(126,200,80,.04)}
+.diag-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.diag-ico{font-size:38px;display:block;margin-bottom:9px}
+.diag-zone h3{font-size:14px;font-weight:600;color:rgba(245,234,208,.68);margin-bottom:4px}
+.diag-zone p{font-size:11.5px;color:rgba(245,234,208,.32)}
+.diag-preview{display:none;margin-bottom:12px;text-align:center}
+.diag-preview img{max-width:100%;max-height:200px;border-radius:13px;border:1px solid rgba(245,234,208,.12);object-fit:cover}
+.diag-type{display:flex;gap:8px;margin-bottom:12px}
+.dtype-btn{flex:1;padding:10px;border-radius:11px;border:1px solid rgba(245,234,208,.09);background:rgba(245,234,208,.04);color:rgba(245,234,208,.52);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;transition:all .2s}
+.dtype-btn.active{background:rgba(126,200,80,.11);border-color:rgba(126,200,80,.28);color:#f5ead0}
+.btn-analyser{width:100%;padding:12px;background:linear-gradient(135deg,#3d7a20,#2a5514);border:none;border-radius:12px;color:#f5ead0;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 5px 18px rgba(74,140,40,.28);transition:all .22s;margin-bottom:12px}
+.btn-analyser:disabled{opacity:.4;cursor:not-allowed}
+.btn-analyser:not(:disabled):hover{transform:translateY(-2px)}
+.diag-result{display:none;background:rgba(245,234,208,.04);border:1px solid rgba(245,234,208,.10);border-radius:15px;padding:14px;margin-bottom:9px}
+.diag-result.show{display:block;animation:fadeUp .3s both}
+.result-header{display:flex;align-items:center;gap:9px;margin-bottom:11px;padding-bottom:9px;border-bottom:1px solid rgba(245,234,208,.07)}
+.result-sev{padding:3px 11px;border-radius:18px;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sev-high{background:rgba(220,80,60,.14);border:1px solid rgba(220,80,60,.28);color:#e08070}
+.sev-med{background:rgba(240,184,64,.11);border:1px solid rgba(240,184,64,.24);color:#f0b840}
+.sev-low{background:rgba(126,200,80,.11);border:1px solid rgba(126,200,80,.24);color:#7ec850}
+.result-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--ivory)}
+.result-body{font-size:12.5px;color:rgba(245,234,208,.72);line-height:1.7;white-space:pre-wrap}
+.btn-ask-ai{width:100%;padding:10px;background:rgba(126,200,80,.09);border:1px solid rgba(126,200,80,.22);border-radius:10px;color:var(--lime);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s;margin-top:9px}
+.btn-ask-ai:hover{background:rgba(126,200,80,.16)}
+.marche-filters{display:flex;gap:6px;margin-bottom:11px;flex-wrap:wrap}
+.mfilter{padding:6px 13px;border-radius:18px;border:1px solid rgba(245,234,208,.09);background:rgba(245,234,208,.04);color:rgba(245,234,208,.42);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s;white-space:nowrap}
+.mfilter.active{background:rgba(240,184,64,.09);border-color:rgba(240,184,64,.26);color:#f0b840}
+.prix-grid{display:flex;flex-direction:column;gap:7px}
+.prix-item{display:flex;align-items:center;gap:11px;padding:11px 13px;background:rgba(245,234,208,.04);border:1px solid rgba(245,234,208,.08);border-radius:12px;transition:all .18s}
+.prix-item:hover{background:rgba(245,234,208,.07)}
+.prix-ico{font-size:22px;flex-shrink:0}
+.prix-info{flex:1}
+.prix-info h4{font-size:13px;font-weight:600;color:var(--ivory)}
+.prix-info p{font-size:10.5px;color:rgba(245,234,208,.36);margin-top:1px}
+.prix-val{text-align:right;flex-shrink:0}
+.prix-val .montant{font-size:14px;font-weight:700;color:var(--lime)}
+.prix-val .unite{font-size:9.5px;color:rgba(245,234,208,.32);margin-top:1px}
+.prix-val .tendance{font-size:9.5px;margin-top:1px}
+.trend-up{color:#7ec850}.trend-down{color:#e05040}.trend-eq{color:rgba(245,234,208,.38)}
+.profil-header{text-align:center;padding:18px 0 14px}
+.profil-avatar{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#3d7a20,#2a5514);border:3px solid rgba(126,200,80,.28);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 11px}
+.profil-nom{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600}
+.profil-loc{font-size:11.5px;color:rgba(245,234,208,.42);margin-top:3px}
+.setting-group{margin-bottom:11px}
+.sg-title{font-size:9.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:7px;padding-left:2px}
+.setting-item{display:flex;align-items:center;gap:11px;padding:11px 13px;background:rgba(245,234,208,.04);border:1px solid rgba(245,234,208,.07);border-radius:12px;margin-bottom:5px;cursor:pointer;transition:all .18s}
+.setting-item:hover{background:rgba(245,234,208,.07)}
+.s-ico{font-size:19px;flex-shrink:0}
+.s-txt{flex:1}
+.s-txt h4{font-size:12.5px;font-weight:500;color:var(--ivory)}
+.s-txt p{font-size:10.5px;color:rgba(245,234,208,.36);margin-top:1px}
+.s-arr{color:rgba(245,234,208,.22);font-size:13px}
+.toggle{width:38px;height:21px;background:rgba(245,234,208,.12);border-radius:10px;position:relative;cursor:pointer;transition:background .22s;flex-shrink:0}
+.toggle.on{background:var(--leaf)}
+.toggle::after{content:'';position:absolute;top:2.5px;left:2.5px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .22s}
+.toggle.on::after{transform:translateX(17px)}
+.lang-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.lang-pill{padding:5px 13px;border-radius:18px;border:1px solid rgba(245,234,208,.10);background:rgba(245,234,208,.04);color:rgba(245,234,208,.50);font-size:11.5px;cursor:pointer;transition:all .18s}
+.lang-pill.active{background:rgba(126,200,80,.11);border-color:rgba(126,200,80,.26);color:var(--lime)}
+.modal-ov{display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center}
 .modal-ov.show{display:flex}
-.modal-bg{position:absolute;inset:0;background:rgba(10,6,2,.75);backdrop-filter:blur(6px)}
-.modal-box{position:relative;z-index:1;background:linear-gradient(160deg,#2a1e0e,#1e1508);border:1px solid rgba(245,234,208,.12);border-radius:24px;padding:32px 28px;max-width:320px;width:90%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6)}
-.modal-emo{font-size:44px;margin-bottom:14px;display:block}
-.modal-box h3{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#f5ead0;margin-bottom:10px}
-.modal-box p{font-size:13px;color:rgba(245,234,208,.5);line-height:1.65;margin-bottom:24px}
-.modal-acts{display:flex;gap:10px}
-.btn-cancel{flex:1;padding:12px;background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.12);border-radius:12px;color:rgba(245,234,208,.6);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
-.btn-quit{flex:1;padding:12px;background:linear-gradient(135deg,#8b2020,#5c1010);border:1px solid rgba(220,60,50,.3);border-radius:12px;color:#ffccc8;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(126,200,80,.18);border-radius:2px}
+.modal-bg{position:absolute;inset:0;background:rgba(10,6,2,.78);backdrop-filter:blur(6px)}
+.modal-box{position:relative;z-index:1;background:linear-gradient(160deg,#2a1e0e,#1e1508);border:1px solid rgba(245,234,208,.12);border-radius:22px;padding:26px 22px;max-width:300px;width:90%;text-align:center;box-shadow:0 18px 48px rgba(0,0,0,.6)}
+.modal-emo{font-size:38px;margin-bottom:10px;display:block}
+.modal-box h3{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#f5ead0;margin-bottom:7px}
+.modal-box p{font-size:12px;color:rgba(245,234,208,.46);line-height:1.65;margin-bottom:20px}
+.modal-acts{display:flex;gap:8px}
+.btn-cancel{flex:1;padding:10px;background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.12);border-radius:10px;color:rgba(245,234,208,.6);font-size:12.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-quit{flex:1;padding:10px;background:linear-gradient(135deg,#8b2020,#5c1010);border:1px solid rgba(220,60,50,.3);border-radius:10px;color:#ffccc8;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+/* ── PAIEMENT ── */
+#modal-paiement{z-index:400}
+.pay-modal-box{position:relative;z-index:1;background:linear-gradient(160deg,#1a1408,#12100a);border:1px solid rgba(240,184,64,.20);border-radius:24px;padding:0;max-width:340px;width:94%;box-shadow:0 24px 60px rgba(0,0,0,.7);overflow:hidden}
+.pay-header{background:linear-gradient(135deg,#2a4a1a,#1c3010);padding:22px 22px 18px;text-align:center;position:relative}
+.pay-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(240,184,64,.30),transparent)}
+.pay-logo{font-size:36px;display:block;margin-bottom:8px;filter:drop-shadow(0 3px 12px rgba(126,200,80,.4))}
+.pay-header h3{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;font-style:italic;color:var(--ivory);margin-bottom:3px}
+.pay-header p{font-size:11px;color:rgba(245,234,208,.45);letter-spacing:.5px}
+.pay-price-band{background:rgba(240,184,64,.08);border-bottom:1px solid rgba(240,184,64,.12);padding:16px 22px;text-align:center}
+.pay-price-band .montant{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;color:var(--sun);line-height:1}
+.pay-price-band .devise{font-size:16px;color:rgba(240,184,64,.65);margin-left:4px}
+.pay-price-band .desc{font-size:11px;color:rgba(245,234,208,.38);margin-top:4px}
+.pay-body{padding:16px 20px 20px}
+.pay-inclus{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.pay-inclus-item{display:flex;align-items:center;gap:9px;font-size:12px;color:rgba(245,234,208,.65)}
+.pay-inclus-item span:first-child{font-size:15px;flex-shrink:0}
+.pay-methods{display:flex;gap:7px;margin-bottom:16px;justify-content:center;flex-wrap:wrap}
+.pay-method{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:10px;padding:7px 12px;font-size:11px;font-weight:600;color:rgba(245,234,208,.65);text-align:center;min-width:72px}
+.pay-method span{display:block;font-size:16px;margin-bottom:3px}
+.btn-payer{width:100%;padding:14px;background:linear-gradient(135deg,#c8960a,#8a6000);border:none;border-radius:14px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 6px 22px rgba(200,150,10,.35);transition:all .25s;letter-spacing:.3px;margin-bottom:9px}
+.btn-payer:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(200,150,10,.5)}
+.btn-payer:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-payer-test{width:100%;padding:10px;background:rgba(126,200,80,.08);border:1px solid rgba(126,200,80,.22);border-radius:12px;color:var(--lime);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-bottom:8px}
+.btn-payer-test:hover{background:rgba(126,200,80,.15)}
+.pay-cancel-link{display:block;text-align:center;font-size:11px;color:rgba(245,234,208,.28);cursor:pointer;transition:color .18s}
+.pay-cancel-link:hover{color:rgba(245,234,208,.55)}
+.pay-badge{display:none;align-items:center;gap:5px;background:rgba(240,184,64,.12);border:1px solid rgba(240,184,64,.28);border-radius:20px;padding:3px 10px;font-size:9.5px;font-weight:600;color:var(--sun)}
+.pay-badge.show{display:flex}
+.pay-config-card{background:rgba(240,184,64,.05);border:1px solid rgba(240,184,64,.14);border-radius:13px;padding:13px 15px;margin-bottom:11px}
+.pay-config-card label{display:block;font-size:9.5px;font-weight:600;color:#d4902a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px}
+.pay-config-field{margin-bottom:8px}
+.pay-config-field input{width:100%;background:rgba(245,234,208,.06);border:1px solid rgba(245,234,208,.12);border-radius:9px;padding:8px 11px;color:#f5ead0;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .18s}
+.pay-config-field input:focus{border-color:rgba(240,184,64,.35)}
+.pay-config-field input::placeholder{color:rgba(245,234,208,.18)}
+.pay-config-field small{font-size:10px;color:rgba(245,234,208,.28);margin-top:4px;display:block}
+.pay-price-inp{display:flex;align-items:center;gap:8px}
+.pay-price-inp input{flex:1}
+.pay-price-inp span{font-size:12px;color:rgba(240,184,64,.65);white-space:nowrap}
+.screen-hd{padding:13px 0 9px}
+.screen-hd h2{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;margin-bottom:3px}
+.screen-hd p{font-size:11.5px;color:rgba(245,234,208,.42)}
 </style>
 </head>
 <body>
+
+<div id="splash">
+  <div class="splash-ring"><div class="splash-icon">🌾</div></div>
+  <div class="splash-title">AgroYield</div>
+  <div class="splash-sub">Votre assistant agricole intelligent</div>
+  <div class="splash-bar"><div class="splash-prog"></div></div>
+</div>
+
 <div class="bg"><div class="orb o1"></div><div class="orb o2"></div></div>
+
 <div id="app">
 
-<header>
-  <div class="logo-ring"><div class="logo-inner">🌾</div></div>
-  <div class="logo-text"><h1>AgroYield</h1><p>Assistant IA Agricole</p></div>
-  <div class="hdr-r">
-    <div class="status-pill" id="status-pill"><div class="sdot"></div><span>En ligne</span></div>
-    <button class="btn-hdr btn-print" id="btn-print">🖨️ Imprimer</button>
-    <button class="btn-hdr btn-exit"  id="btn-exit">⏹ Terminer</button>
-  </div>
-</header>
-<div class="divider"></div>
-
-<div id="hero-panel">
-  <div class="hero-card">
-    <div id="hero-exp">
-      <div class="hero-badge">✦ Intelligence Agricole ✦</div>
-      <span class="hero-icon">🌱</span>
-      <h2>Bonjour, <em>Fermier !</em></h2>
-      <p>Votre assistant IA expert en agriculture agro-pastorale africaine. Je vous accompagne pour <strong>maximiser vos rendements</strong> en culture et en élevage.</p>
+  <header>
+    <div class="logo-ring"><div class="logo-inner">🌾</div></div>
+    <div class="logo-text"><h1>AgroYield</h1><p>Assistant IA Agricole</p></div>
+    <div class="hdr-r">
+      <div class="status-pill" id="status-pill"><div class="sdot"></div><span>En ligne</span></div>
+      <div class="pay-badge" id="pay-badge">💳 Session payée</div>
+      <button class="btn-hdr btn-print" id="btn-print">🖨️ Imprimer</button>
+      <button class="btn-hdr btn-exit"  id="btn-exit">⏹ Terminer</button>
     </div>
-    <div id="hero-cmp">
-      <div class="hc-ico">🌱</div>
-      <div class="hc-txt">
-        <h3>AgroYield — à votre service</h3>
-        <p id="hc-sub">Choisissez un thème ou posez votre question</p>
+  </header>
+
+  <div id="content">
+
+    <!-- ACCUEIL -->
+    <div class="screen active" id="screen-accueil">
+      <div class="welcome-msg">
+        <span class="ico">🌱</span>
+        <h2>Bonjour, <em>Fermier !</em></h2>
+        <p>📍 Bénin · Assistant prêt à vous accompagner</p>
+      </div>
+      <div class="meteo-card">
+        <div class="meteo-ico">⛅</div>
+        <div class="meteo-info">
+          <h3>31°C · Cotonou</h3>
+          <p>Partiellement nuageux · Humidité 78%</p>
+          <span class="meteo-alerte">⚠️ Pluie prévue demain — évite de traiter</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ Accès rapide</div>
+        <div class="quick-grid">
+          <div class="quick-btn" id="qb-assistant"><span class="qi">🤖</span><div class="ql">Parler à l'IA</div><div class="qd">Conseils personnalisés</div></div>
+          <div class="quick-btn" id="qb-diagnostic"><span class="qi">🔬</span><div class="ql">Diagnostiquer</div><div class="qd">Photo plante ou animal</div></div>
+          <div class="quick-btn" id="qb-marche"><span class="qi">📊</span><div class="ql">Prix du marché</div><div class="qd">Données du jour</div></div>
+          <div class="quick-btn" id="qb-profil"><span class="qi">👤</span><div class="ql">Mon profil</div><div class="qd">Paramètres</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔔 Alertes du jour</div>
+        <div class="alerte-item"><div class="alerte-dot high"></div><div class="alerte-txt"><strong>Vaccination volailles</strong>Cette semaine — ne pas attendre pour la Newcastle</div></div>
+        <div class="alerte-item"><div class="alerte-dot med"></div><div class="alerte-txt"><strong>Prix du maïs en hausse</strong>+12% dans votre zone cette semaine</div></div>
+        <div class="alerte-item"><div class="alerte-dot low"></div><div class="alerte-txt"><strong>Semis de maïs</strong>Période favorable dans 10 jours selon météo</div></div>
       </div>
     </div>
-    <div class="feat-row">
-      <button class="feat-btn" id="btn-cultures"><span class="feat-ico">🌽</span><span class="feat-lbl">Cultures</span></button>
-      <button class="feat-btn" id="btn-elevage"><span class="feat-ico">🐄</span><span class="feat-lbl">Élevage</span></button>
-      <button class="feat-btn" id="btn-climat"><span class="feat-ico">🌤️</span><span class="feat-lbl">Climat</span></button>
-      <button class="feat-btn" id="btn-rendement"><span class="feat-ico">📈</span><span class="feat-lbl">Rendement</span></button>
-    </div>
-  </div>
-</div>
 
-<div id="cat-panel">
-  <div class="cat-inner">
-    <div class="cat-title" id="cat-title"></div>
-    <div id="cat-chips"></div>
-  </div>
-</div>
-
-<div id="welcome-bot">
-  <div id="apikey-section">
-    <div class="apikey-card">
-      <label>🔑 Clé API Anthropic</label>
-      <div class="apikey-row">
-        <input type="password" id="api-input" placeholder="sk-ant-api03-…"/>
-        <button class="btn-save" id="btn-save-key">Enregistrer</button>
+    <!-- ASSISTANT -->
+    <div class="screen" id="screen-assistant">
+      <div id="hero-panel">
+        <div class="hero-card">
+          <div id="hero-exp">
+            <div class="hero-badge">✦ Intelligence Agricole ✦</div>
+            <span class="hero-icon">🌱</span>
+            <h2>Bonjour, <em>Fermier !</em></h2>
+            <p>Expert en agriculture agro-pastorale africaine. Je vous aide à <strong>maximiser vos rendements</strong>.</p>
+          </div>
+          <div id="hero-cmp"><div class="hc-ico">🌱</div><div class="hc-txt"><h3>AgroYield — à votre service</h3><p id="hc-sub">Choisissez un thème ou posez votre question</p></div></div>
+          <div class="feat-row">
+            <button class="feat-btn" id="btn-cultures"><span class="feat-ico">🌽</span><span class="feat-lbl">Cultures</span></button>
+            <button class="feat-btn" id="btn-elevage"><span class="feat-ico">🐄</span><span class="feat-lbl">Élevage</span></button>
+            <button class="feat-btn" id="btn-climat"><span class="feat-ico">🌤️</span><span class="feat-lbl">Climat</span></button>
+            <button class="feat-btn" id="btn-rendement"><span class="feat-ico">📈</span><span class="feat-lbl">Rendement</span></button>
+          </div>
+        </div>
       </div>
-      <div class="api-status" id="api-status">Entrez votre clé API pour commencer</div>
+      <div id="cat-panel"><div class="cat-inner"><div class="cat-title" id="cat-title"></div><div id="cat-chips"></div></div></div>
+      <div id="welcome-bot">
+        <div class="apikey-card" id="apikey-section">
+          <label>🔑 Clé API Anthropic</label>
+          <div class="apikey-row">
+            <input type="password" class="api-inp" id="api-input" placeholder="sk-ant-api03-…"/>
+            <button class="btn-save" id="btn-save-key">Enregistrer</button>
+          </div>
+          <div class="api-status" id="api-status">Entrez votre clé API pour commencer</div>
+        </div>
+        <button class="btn-start" id="btn-start">Commencer la consultation &nbsp;🚀</button>
+        <div class="sec-div">Questions fréquentes</div>
+        <div class="suggestions" id="suggestions"></div>
+      </div>
+      <div id="chat-area"></div>
+    </div>
+
+    <!-- DIAGNOSTIC -->
+    <div class="screen" id="screen-diagnostic">
+      <div class="screen-hd"><h2>🔬 Diagnostic par photo</h2><p>Prenez en photo une plante ou un animal malade</p></div>
+      <div class="diag-zone" id="diag-zone">
+        <input type="file" id="diag-file" accept="image/*" capture="environment"/>
+        <span class="diag-ico">📷</span>
+        <h3>Prendre ou choisir une photo</h3>
+        <p>Cadrez bien la zone malade · 1 à 2 photos suffisent</p>
+      </div>
+      <div class="diag-preview" id="diag-preview"><img id="diag-img" src="" alt="Photo pour diagnostic"/></div>
+      <div class="diag-type">
+        <button class="dtype-btn active" id="dtype-plante">🌿 Plante / Culture</button>
+        <button class="dtype-btn" id="dtype-animal">🐄 Animal d'élevage</button>
+      </div>
+      <button class="btn-analyser" id="btn-analyser" disabled>🔍 Lancer l'analyse IA</button>
+      <div class="diag-result" id="diag-result">
+        <div class="result-header"><span class="result-sev" id="result-sev"></span><div class="result-title" id="result-title"></div></div>
+        <div class="result-body" id="result-body"></div>
+        <button class="btn-ask-ai" id="btn-ask-ai">💬 Discuter avec l'assistant IA</button>
+      </div>
+    </div>
+
+    <!-- MARCHÉ -->
+    <div class="screen" id="screen-marche">
+      <div class="screen-hd"><h2>📊 Prix du marché</h2><p id="marche-date">Chargement…</p></div>
+      <div class="marche-filters">
+        <button class="mfilter active" data-cat="tout">Tout</button>
+        <button class="mfilter" data-cat="cereales">🌾 Céréales</button>
+        <button class="mfilter" data-cat="legumes">🥬 Légumes</button>
+        <button class="mfilter" data-cat="elevage">🐄 Élevage</button>
+        <button class="mfilter" data-cat="intrants">🧪 Intrants</button>
+      </div>
+      <div class="prix-grid" id="prix-grid"></div>
+    </div>
+
+    <!-- PROFIL -->
+    <div class="screen" id="screen-profil">
+      <div class="profil-header">
+        <div class="profil-avatar">👨‍🌾</div>
+        <div class="profil-nom">Mon exploitation</div>
+        <div class="profil-loc">📍 Bénin · Agriculteur / Éleveur</div>
+      </div>
+      <div class="setting-group">
+        <div class="sg-title">Profil agricole</div>
+        <div class="setting-item"><span class="s-ico">🌾</span><div class="s-txt"><h4>Activités principales</h4><p>Maïs, Volaille, Maraîchage</p></div><span class="s-arr">›</span></div>
+        <div class="setting-item"><span class="s-ico">📍</span><div class="s-txt"><h4>Localisation</h4><p>Cotonou, Bénin</p></div><span class="s-arr">›</span></div>
+      </div>
+      <div class="setting-group">
+        <div class="sg-title">Langue de l'interface</div>
+        <div class="lang-pills">
+          <button class="lang-pill active" data-lang="fr">🇫🇷 Français</button>
+          <button class="lang-pill" data-lang="en">🇬🇧 English</button>
+          <button class="lang-pill" data-lang="yo">Yoruba</button>
+          <button class="lang-pill" data-lang="fon">Fon</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <div class="sg-title">Préférences</div>
+        <div class="setting-item"><span class="s-ico">🔊</span><div class="s-txt"><h4>Lecture vocale automatique</h4><p>Écouter les réponses de l'IA</p></div><div class="toggle on" id="toggle-voice"></div></div>
+        <div class="setting-item"><span class="s-ico">🔔</span><div class="s-txt"><h4>Notifications</h4><p>Alertes et rappels agricoles</p></div><div class="toggle on" id="toggle-notif"></div></div>
+      </div>
+      <div class="setting-group">
+        <div class="sg-title">💳 Paiement CinetPay</div>
+        <div class="pay-config-card">
+          <label>Configuration de la passerelle de paiement</label>
+          <div class="pay-config-field">
+            <input type="text" id="cp-apikey" placeholder="Clé API CinetPay"/>
+            <small>Obtenez votre clé sur <strong>cinetpay.com</strong></small>
+          </div>
+          <div class="pay-config-field">
+            <input type="text" id="cp-siteid" placeholder="Site ID CinetPay"/>
+          </div>
+          <div class="pay-config-field">
+            <div class="pay-price-inp">
+              <input type="number" id="cp-prix" placeholder="500" min="100" step="100"/>
+              <span>FCFA / consultation</span>
+            </div>
+            <small>Tarif facturé à chaque nouvelle session</small>
+          </div>
+          <button class="btn-save" id="btn-save-pay" style="width:100%;margin-top:4px">Enregistrer la configuration</button>
+          <div class="api-status" id="pay-config-status">Mode test actif — aucune clé configurée</div>
+        </div>
+      </div>
+      <div class="setting-group">
+        <div class="sg-title">Clé API Anthropic</div>
+        <div class="apikey-card" style="margin-bottom:0">
+          <label>🔑 Clé API Anthropic</label>
+          <div class="apikey-row">
+            <input type="password" class="api-inp" id="api-input-profil" placeholder="sk-ant-api03-…"/>
+            <button class="btn-save" id="btn-save-profil">Mettre à jour</button>
+          </div>
+          <div class="api-status ok" id="api-status-profil">✅ Clé active</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- #content -->
+
+  <div id="input-bar">
+    <div class="input-wrap">
+      <textarea id="user-input" rows="1" placeholder="Posez votre question agricole…"></textarea>
+      <div class="input-btns">
+        <button class="ibtn" id="mic-btn">🎤</button>
+        <button class="ibtn" id="send-btn">➤</button>
+      </div>
+    </div>
+    <p class="footer-note">Propulsé par <span>Claude AI</span> · AgroYield</p>
+  </div>
+
+  <div id="nav">
+    <button class="nav-btn active" data-tab="accueil"><span class="nav-ico">🏠</span><span class="nav-lbl">Accueil</span></button>
+    <button class="nav-btn" data-tab="assistant"><span class="nav-ico">🤖</span><span class="nav-lbl">Assistant</span></button>
+    <button class="nav-btn" data-tab="diagnostic"><span class="nav-ico">🔬</span><span class="nav-lbl">Diagnostic</span></button>
+    <button class="nav-btn" data-tab="marche"><span class="nav-ico">📊</span><span class="nav-lbl">Marché</span></button>
+    <button class="nav-btn" data-tab="profil"><span class="nav-ico">👤</span><span class="nav-lbl">Profil</span></button>
+  </div>
+
+  <!-- MODAL PAIEMENT -->
+  <div class="modal-ov" id="modal-paiement" style="z-index:400">
+    <div class="modal-bg" id="pay-modal-bg"></div>
+    <div class="pay-modal-box">
+      <div class="pay-header">
+        <span class="pay-logo">🌾</span>
+        <h3>AgroYield</h3>
+        <p>Consultation avec votre assistant IA agricole</p>
+      </div>
+      <div class="pay-price-band">
+        <div><span class="montant" id="pay-montant-display">500</span><span class="devise">FCFA</span></div>
+        <div class="desc">par consultation · accès illimité pendant la session</div>
+      </div>
+      <div class="pay-body">
+        <div class="pay-inclus">
+          <div class="pay-inclus-item"><span>✅</span><span>Réponses IA illimitées pendant la session</span></div>
+          <div class="pay-inclus-item"><span>✅</span><span>Diagnostic photo plantes &amp; animaux</span></div>
+          <div class="pay-inclus-item"><span>✅</span><span>Rapport de consultation imprimable</span></div>
+          <div class="pay-inclus-item"><span>✅</span><span>Conseils adaptés à votre exploitation</span></div>
+        </div>
+        <div class="pay-methods">
+          <div class="pay-method"><span>📱</span>MTN MoMo</div>
+          <div class="pay-method"><span>📱</span>Moov Money</div>
+          <div class="pay-method"><span>🌊</span>Wave</div>
+          <div class="pay-method"><span>💳</span>Carte</div>
+        </div>
+        <button class="btn-payer" id="btn-payer-maintenant">💳 Payer maintenant</button>
+        <button class="btn-payer-test" id="btn-payer-test">🧪 Simuler le paiement (test)</button>
+        <span class="pay-cancel-link" id="pay-annuler">Annuler</span>
+      </div>
     </div>
   </div>
-  <button class="btn-start" id="btn-start">Commencer la consultation &nbsp;🚀</button>
-  <div class="sec-div">Questions fréquentes</div>
-  <div class="suggestions" id="suggestions"></div>
-</div>
 
-<div id="chat-area"></div>
-
-<div id="input-bar">
-  <div class="input-wrap">
-    <textarea id="user-input" rows="1" placeholder="Posez votre question agricole…"></textarea>
-    <button id="send-btn">➤</button>
-  </div>
-  <p class="footer-note">Propulsé par <span>Claude AI</span> · AgroYield</p>
-</div>
-
-<div class="modal-ov" id="modal-sortie">
-  <div class="modal-bg" id="modal-bg"></div>
-  <div class="modal-box">
-    <span class="modal-emo">🌾</span>
-    <h3>Terminer la consultation ?</h3>
-    <p>L'historique sera effacé et vous reviendrez à l'accueil.</p>
-    <div class="modal-acts">
-      <button class="btn-cancel" id="btn-continuer">Continuer</button>
-      <button class="btn-quit"   id="btn-quitter">Oui, terminer</button>
+  <div class="modal-ov" id="modal-sortie">
+    <div class="modal-bg" id="modal-bg"></div>
+    <div class="modal-box">
+      <span class="modal-emo">🌾</span>
+      <h3>Terminer la consultation ?</h3>
+      <p>L'historique sera effacé et vous reviendrez à l'accueil.</p>
+      <div class="modal-acts">
+        <button class="btn-cancel" id="btn-continuer">Continuer</button>
+        <button class="btn-quit" id="btn-quitter">Oui, terminer</button>
+      </div>
     </div>
   </div>
-</div>
 
-</div><!-- #app -->
+</div>
 
 <script>
-(function() {
+(function(){
 "use strict";
 
-// ─── CONFIGURATION ───────────────────────────────────────────────
 var CLE_API = "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";
 
-var PROMPT = "Tu es AgroYield, un assistant IA expert en agriculture agro-pastorale africaine.\n\nLes 15 problèmes clés :\n1. Dépendance à la pluie\n2. Faible fertilité des sols\n3. Accès limité aux semences améliorées\n4. Intrants coûteux\n5. Rendements bas\n6. Ravageurs et maladies\n7. Faible irrigation\n8. Pertes post-récolte\n9. Mauvais accès marchés\n10. Faible transformation locale\n11. Déficit fourrager\n12. Maladies animales\n13. Faible productivité laitière\n14. Conflits terre/eau\n15. Faible financement et organisation\n\nConseils pratiques adaptés à l'Afrique, moins de 160 mots par réponse, solutions sans grands moyens, encourager le paysan. Commence par un accueil chaleureux.";
+var PROMPT = "Tu es AgroYield, assistant IA expert en agriculture agro-pastorale africaine.\n15 problèmes clés : 1.Pluie 2.Sol 3.Semences 4.Intrants 5.Rendements 6.Ravageurs 7.Irrigation 8.Post-récolte 9.Marchés 10.Transformation 11.Fourrage 12.Maladies animales 13.Productivité laitière 14.Conflits terre/eau 15.Financement.\nRègle : réponses pratiques Afrique, max 160 mots, solutions sans grands moyens, encourage le paysan.";
 
 var CATS = {
-  cultures: {
-    label: "🌽 Cultures",
-    sections: [
-      { titre: "🌱 Sol & Semences", items: [
-        "Mes sols sont épuisés — comment restaurer leur fertilité ?",
-        "Comment accéder à de bonnes semences améliorées ?",
-        "Les engrais coûtent trop cher — quelles alternatives naturelles ?"
-      ]},
-      { titre: "🐛 Ravageurs & Récolte", items: [
-        "Des ravageurs et maladies détruisent mes cultures — que faire ?",
-        "Je perds beaucoup de récolte au stockage — comment éviter ça ?",
-        "Comment transformer ma récolte pour mieux la valoriser ?"
-      ]}
-    ]
-  },
-  elevage: {
-    label: "🐄 Élevage",
-    sections: [
-      { titre: "🌿 Alimentation & Santé", items: [
-        "Mon bétail manque de fourrage en saison sèche — quelles solutions ?",
-        "Comment protéger mon troupeau des maladies contagieuses ?",
-        "Mes vaches produisent peu de lait — comment améliorer ça ?"
-      ]},
-      { titre: "🐣 Reproduction & Cohabitation", items: [
-        "Mes animaux se reproduisent peu — que faire ?",
-        "Il y a des conflits entre éleveurs et agriculteurs pour les terres",
-        "Comment améliorer la ponte et la santé de mes volailles ?"
-      ]}
-    ]
-  },
-  climat: {
-    label: "🌤️ Climat & Eau",
-    sections: [
-      { titre: "🌧️ Pluie & Sécheresse", items: [
-        "Je dépends entièrement de la pluie — comment sécuriser ma production ?",
-        "Les sécheresses se répètent — comment adapter mes cultures ?",
-        "Les pluies arrivent trop tard ou trop fort — comment m'organiser ?"
-      ]},
-      { titre: "💧 Irrigation & Eau", items: [
-        "Comment irriguer mes champs avec peu de moyens ?",
-        "Comment gérer l'eau entre cultures et élevage sans conflit ?",
-        "Mon champ est inondé en saison des pluies — comment le protéger ?"
-      ]}
-    ]
-  },
-  rendement: {
-    label: "📈 Rendement & Marché",
-    sections: [
-      { titre: "📊 Production & Vente", items: [
-        "Mes rendements sont très bas — comment identifier les causes ?",
-        "Je vends mal ma production — comment accéder à de meilleurs marchés ?",
-        "Les routes sont mauvaises et je perds des clients — quelles solutions ?"
-      ]},
-      { titre: "💰 Financement & Organisation", items: [
-        "Comment financer mes intrants sans accès aux banques ?",
-        "Comment me regrouper avec d'autres paysans pour mieux réussir ?",
-        "Où trouver des conseils techniques et un encadrement fiable ?"
-      ]}
-    ]
-  }
+  cultures:{label:"🌽 Cultures",sections:[
+    {titre:"🌱 Sol & Semences",items:["Mes sols sont épuisés — comment restaurer leur fertilité ?","Comment accéder à de bonnes semences améliorées ?","Les engrais coûtent trop cher — quelles alternatives naturelles ?"]},
+    {titre:"🐛 Ravageurs & Récolte",items:["Des ravageurs et maladies détruisent mes cultures — que faire ?","Je perds beaucoup de récolte au stockage — comment éviter ça ?","Comment transformer ma récolte pour mieux la valoriser ?"]}
+  ]},
+  elevage:{label:"🐄 Élevage",sections:[
+    {titre:"🌿 Alimentation & Santé",items:["Mon bétail manque de fourrage en saison sèche — quelles solutions ?","Comment protéger mon troupeau des maladies contagieuses ?","Mes vaches produisent peu de lait — comment améliorer ça ?"]},
+    {titre:"🐣 Reproduction",items:["Mes animaux se reproduisent peu — que faire ?","Conflits éleveurs/agriculteurs pour les terres et l'eau","Comment améliorer la ponte et la santé de mes volailles ?"]}
+  ]},
+  climat:{label:"🌤️ Climat & Eau",sections:[
+    {titre:"🌧️ Pluie & Sécheresse",items:["Je dépends entièrement de la pluie — comment sécuriser ma production ?","Les sécheresses se répètent — comment adapter mes cultures ?","Les pluies arrivent trop tard ou trop fort — comment m'organiser ?"]},
+    {titre:"💧 Irrigation",items:["Comment irriguer mes champs avec peu de moyens ?","Comment gérer l'eau entre cultures et élevage ?","Mon champ est inondé en saison des pluies — comment le protéger ?"]}
+  ]},
+  rendement:{label:"📈 Rendement & Marché",sections:[
+    {titre:"📊 Production & Vente",items:["Mes rendements sont très bas — comment identifier les causes ?","Je vends mal ma production — comment accéder à de meilleurs marchés ?","Les routes sont mauvaises et je perds des clients — solutions ?"]},
+    {titre:"💰 Financement",items:["Comment financer mes intrants sans accès aux banques ?","Comment me regrouper avec d'autres paysans ?","Où trouver des conseils techniques et un encadrement fiable ?"]}
+  ]}
 };
 
-var SUGS = [
-  "Mes sols sont épuisés, comment les régénérer ?",
-  "Mon bétail manque de fourrage en saison sèche",
-  "Je dépends entièrement de la pluie pour cultiver",
-  "Mes rendements sont très bas cette saison",
-  "Des ravageurs détruisent mes cultures",
-  "Comment financer mes intrants agricoles ?"
+var SUGS = ["Mes sols sont épuisés, comment les régénérer ?","Mon bétail manque de fourrage en saison sèche","Je dépends entièrement de la pluie pour cultiver","Mes rendements sont très bas cette saison","Des ravageurs détruisent mes cultures","Comment financer mes intrants agricoles ?"];
+
+var PRIX = [
+  {cat:"cereales",ico:"🌽",nom:"Maïs",lieu:"Cotonou",prix:"180",unite:"FCFA/kg",t:"up",d:"+8%"},
+  {cat:"cereales",ico:"🌾",nom:"Sorgho",lieu:"Parakou",prix:"150",unite:"FCFA/kg",t:"eq",d:"stable"},
+  {cat:"cereales",ico:"🍚",nom:"Riz local",lieu:"Cotonou",prix:"420",unite:"FCFA/kg",t:"up",d:"+5%"},
+  {cat:"cereales",ico:"🥜",nom:"Arachide",lieu:"Bohicon",prix:"350",unite:"FCFA/kg",t:"down",d:"-3%"},
+  {cat:"legumes",ico:"🍅",nom:"Tomate",lieu:"Cotonou",prix:"250",unite:"FCFA/kg",t:"up",d:"+12%"},
+  {cat:"legumes",ico:"🧅",nom:"Oignon",lieu:"Cotonou",prix:"300",unite:"FCFA/kg",t:"eq",d:"stable"},
+  {cat:"legumes",ico:"🫑",nom:"Piment",lieu:"Abomey",prix:"800",unite:"FCFA/kg",t:"up",d:"+15%"},
+  {cat:"legumes",ico:"🥬",nom:"Gombo",lieu:"Cotonou",prix:"400",unite:"FCFA/kg",t:"down",d:"-5%"},
+  {cat:"elevage",ico:"🐄",nom:"Bœuf vif",lieu:"Parakou",prix:"1 200",unite:"FCFA/kg",t:"up",d:"+6%"},
+  {cat:"elevage",ico:"🐐",nom:"Chèvre",lieu:"Natitingou",prix:"35 000",unite:"FCFA/tête",t:"eq",d:"stable"},
+  {cat:"elevage",ico:"🐔",nom:"Poulet de chair",lieu:"Cotonou",prix:"2 200",unite:"FCFA/kg",t:"up",d:"+4%"},
+  {cat:"elevage",ico:"🥚",nom:"Œufs",lieu:"Cotonou",prix:"75",unite:"FCFA/unité",t:"eq",d:"stable"},
+  {cat:"intrants",ico:"🧪",nom:"NPK 15-15-15",lieu:"Cotonou",prix:"18 000",unite:"FCFA/sac 50kg",t:"up",d:"+10%"},
+  {cat:"intrants",ico:"🌿",nom:"Urée 46%",lieu:"Cotonou",prix:"22 000",unite:"FCFA/sac 50kg",t:"up",d:"+8%"},
+  {cat:"intrants",ico:"💊",nom:"Herbicide glypho",lieu:"Bohicon",prix:"6 500",unite:"FCFA/L",t:"eq",d:"stable"}
 ];
 
-// ─── ÉTAT ───────────────────────────────────────────────────────
-var histo = [];
-var enCharge = false;
-var consultOK = false;
-var catOuv = null;
+var histo=[],enCharge=false,consultOK=false,catOuv=null,voiceOn=true,diagType="plante",diagB64=null,diagTxt="",micRecog=null,micOn=false;
+var synth=window.speechSynthesis;
+// ── PAIEMENT ──
+var CINETPAY_KEY="",CINETPAY_SITEID="",PRIX_CONSULTATION=500;
+var paiementOK=false,pendingTexte="";
 
-// ─── ÉLÉMENTS DOM ───────────────────────────────────────────────
-var elHeroExp   = document.getElementById("hero-exp");
-var elHeroCmp   = document.getElementById("hero-cmp");
-var elHcSub     = document.getElementById("hc-sub");
-var elWelcome   = document.getElementById("welcome-bot");
-var elCatPanel  = document.getElementById("cat-panel");
-var elCatTitle  = document.getElementById("cat-title");
-var elCatChips  = document.getElementById("cat-chips");
-var elChat      = document.getElementById("chat-area");
-var elInputBar  = document.getElementById("input-bar");
-var elStatusPill= document.getElementById("status-pill");
-var elBtnPrint  = document.getElementById("btn-print");
-var elBtnExit   = document.getElementById("btn-exit");
-var elApiInput  = document.getElementById("api-input");
-var elApiStatus = document.getElementById("api-status");
-var elApiSection= document.getElementById("apikey-section");
-var elTextarea  = document.getElementById("user-input");
-var elSendBtn   = document.getElementById("send-btn");
-var elModal     = document.getElementById("modal-sortie");
+var elHExp=document.getElementById("hero-exp"),elHCmp=document.getElementById("hero-cmp"),
+    elHcSub=document.getElementById("hc-sub"),elWelcome=document.getElementById("welcome-bot"),
+    elCatPanel=document.getElementById("cat-panel"),elCatTitle=document.getElementById("cat-title"),
+    elCatChips=document.getElementById("cat-chips"),elChat=document.getElementById("chat-area"),
+    elInputBar=document.getElementById("input-bar"),elStatusPill=document.getElementById("status-pill"),
+    elBtnPrint=document.getElementById("btn-print"),elBtnExit=document.getElementById("btn-exit"),
+    elApiInput=document.getElementById("api-input"),elApiStatus=document.getElementById("api-status"),
+    elTA=document.getElementById("user-input"),elSend=document.getElementById("send-btn"),
+    elMic=document.getElementById("mic-btn"),elModal=document.getElementById("modal-sortie");
 
-// ─── CLÉ API ───────────────────────────────────────────────────
-document.getElementById("btn-save-key").addEventListener("click", function() {
-  var v = elApiInput.value.trim();
-  if (!v) { elApiStatus.textContent = "⚠️ Veuillez entrer une clé API"; elApiStatus.className = "api-status err"; return; }
-  if (!v.startsWith("sk-ant")) { elApiStatus.textContent = "⚠️ Clé invalide (doit commencer par sk-ant)"; elApiStatus.className = "api-status err"; return; }
-  CLE_API = v;
-  elApiStatus.textContent = "✅ Clé enregistrée — vous pouvez commencer !";
-  elApiStatus.className = "api-status ok";
-  elApiInput.value = "";
-});
+// SPLASH
+setTimeout(function(){
+  var s=document.getElementById("splash"); s.classList.add("out");
+  setTimeout(function(){s.style.display="none";},900);
+},2400);
 
-// ─── SUGGESTIONS ───────────────────────────────────────────────
-var boiteSugs = document.getElementById("suggestions");
-SUGS.forEach(function(s) {
-  var btn = document.createElement("button");
-  btn.className = "sug-btn";
-  btn.textContent = s;
-  btn.addEventListener("click", function() { lancer(s); });
-  boiteSugs.appendChild(btn);
-});
+// ── PAIEMENT ────────────────────────────────────────────────────
+function genTxId(){return"AY"+Date.now()+Math.floor(Math.random()*9999);}
 
-// ─── BOUTONS CATÉGORIES ─────────────────────────────────────────
-["cultures","elevage","climat","rendement"].forEach(function(cat) {
-  document.getElementById("btn-" + cat).addEventListener("click", function() {
-    ouvrirCat(cat);
-  });
-});
-
-// ─── BOUTONS HEADER ────────────────────────────────────────────
-document.getElementById("btn-start").addEventListener("click", function() {
-  lancer("Bonjour, je suis un fermier agro-pastoral. J'ai besoin d'aide pour améliorer mes rendements.");
-});
-elBtnPrint.addEventListener("click", imprimer);
-elBtnExit.addEventListener("click", function() { elModal.classList.add("show"); });
-document.getElementById("modal-bg").addEventListener("click", function() { elModal.classList.remove("show"); });
-document.getElementById("btn-continuer").addEventListener("click", function() { elModal.classList.remove("show"); });
-document.getElementById("btn-quitter").addEventListener("click", confirmerSortie);
-
-// ─── TEXTAREA ──────────────────────────────────────────────────
-elTextarea.addEventListener("input", function() {
-  elTextarea.style.height = "auto";
-  elTextarea.style.height = elTextarea.scrollHeight + "px";
-  majEnvoi();
-});
-elTextarea.addEventListener("keydown", function(e) {
-  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); envoyer(); }
-});
-elSendBtn.addEventListener("click", function() { envoyer(); });
-
-function majEnvoi() {
-  var actif = elTextarea.value.trim().length > 0 && !enCharge;
-  elSendBtn.className = actif ? "on" : "";
+function afficherModalPaiement(){
+  document.getElementById("pay-montant-display").textContent=PRIX_CONSULTATION;
+  var modeProd=CINETPAY_KEY&&CINETPAY_SITEID;
+  document.getElementById("btn-payer-maintenant").style.display=modeProd?"block":"none";
+  document.getElementById("btn-payer-test").style.display="block";
+  document.getElementById("modal-paiement").classList.add("show");
 }
 
-// ─── FONCTIONS PRINCIPALES ─────────────────────────────────────
-function verifierCle() {
-  return true;
+function fermerModalPaiement(){
+  document.getElementById("modal-paiement").classList.remove("show");
 }
 
-function lancer(texte) {
-  if (!verifierCle()) return;
-  activerChat();
-  envoyer(texte);
+function onPaiementSucces(){
+  paiementOK=true;
+  fermerModalPaiement();
+  document.getElementById("pay-badge").classList.add("show");
+  if(pendingTexte){var t=pendingTexte;pendingTexte="";activerChat();envoyer(t);}
 }
 
-function activerChat() {
-  if (consultOK) return;
-  consultOK = true;
-  elHeroExp.style.display = "none";
-  elHeroCmp.style.display = "flex";
-  elWelcome.style.display = "none";
-  elCatPanel.classList.remove("show");
-  elChat.classList.add("on");
-  elInputBar.classList.add("on");
-  elStatusPill.style.display = "none";
-  elBtnPrint.classList.add("show");
-  elBtnExit.classList.add("show");
+function lancerCinetPay(){
+  if(!CINETPAY_KEY||!CINETPAY_SITEID){return;}
+  try{
+    CinetPay.setConfig({apikey:CINETPAY_KEY,site_id:CINETPAY_SITEID,notify_url:"",mode:"PRODUCTION"});
+    CinetPay.getCheckout({
+      transaction_id:genTxId(),amount:PRIX_CONSULTATION,currency:"XOF",channels:"ALL",
+      description:"Consultation AgroYield",
+      customer_name:"Fermier",customer_surname:"",customer_email:"contact@agroyield.com",
+      customer_phone_number:"",customer_address:"Bénin",customer_city:"Cotonou",
+      customer_country:"BJ",customer_state:"BJ",customer_zip_code:"00000"
+    });
+    CinetPay.waitResponse(function(data){
+      if(data.status==="ACCEPTED"){onPaiementSucces();}
+      else{alert("⚠️ Paiement refusé ou annulé. Veuillez réessayer.");}
+    });
+    CinetPay.onError(function(data){console.error("CinetPay error",data);});
+  }catch(e){console.error(e);}
 }
 
-function ouvrirCat(cat) {
-  var dejaOuvert = catOuv === cat && elCatPanel.classList.contains("show");
-  document.querySelectorAll(".feat-btn").forEach(function(b) { b.classList.remove("active"); });
-  if (dejaOuvert) { elCatPanel.classList.remove("show"); catOuv = null; return; }
-  catOuv = cat;
-  document.getElementById("btn-" + cat).classList.add("active");
-  var data = CATS[cat];
-  elCatTitle.textContent = data.label;
-  elCatChips.innerHTML = "";
-  data.sections.forEach(function(sec) {
-    var lbl = document.createElement("div");
-    lbl.className = "sec-lbl";
-    lbl.textContent = sec.titre;
-    elCatChips.appendChild(lbl);
-    sec.items.forEach(function(question) {
-      var chip = document.createElement("button");
-      chip.className = "cat-chip";
-      chip.textContent = question;
-      chip.addEventListener("click", function() {
-        elCatPanel.classList.remove("show");
-        catOuv = null;
-        document.querySelectorAll(".feat-btn").forEach(function(b) { b.classList.remove("active"); });
-        lancer(question);
+document.getElementById("btn-payer-maintenant").addEventListener("click",function(){
+  document.getElementById("btn-payer-maintenant").disabled=true;
+  document.getElementById("btn-payer-maintenant").textContent="⏳ Ouverture du paiement…";
+  lancerCinetPay();
+  setTimeout(function(){
+    document.getElementById("btn-payer-maintenant").disabled=false;
+    document.getElementById("btn-payer-maintenant").textContent="💳 Payer maintenant";
+  },4000);
+});
+
+document.getElementById("btn-payer-test").addEventListener("click",function(){
+  fermerModalPaiement();
+  setTimeout(onPaiementSucces,600);
+});
+
+document.getElementById("pay-annuler").addEventListener("click",function(){
+  pendingTexte="";fermerModalPaiement();
+});
+document.getElementById("pay-modal-bg").addEventListener("click",function(){
+  pendingTexte="";fermerModalPaiement();
+});
+
+document.getElementById("btn-save-pay").addEventListener("click",function(){
+  var k=document.getElementById("cp-apikey").value.trim();
+  var s=document.getElementById("cp-siteid").value.trim();
+  var p=parseInt(document.getElementById("cp-prix").value)||500;
+  var st=document.getElementById("pay-config-status");
+  CINETPAY_KEY=k;CINETPAY_SITEID=s;PRIX_CONSULTATION=p;
+  if(k&&s){st.textContent="✅ CinetPay configuré — tarif "+p+" FCFA";st.className="api-status ok";}
+  else{st.textContent="Mode test actif — aucune clé configurée";st.className="api-status";}
+});
+
+// NAV
+function goTab(tab){
+  document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
+  document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.remove("active");});
+  document.getElementById("screen-"+tab).classList.add("active");
+  document.querySelector("[data-tab='"+tab+"']").classList.add("active");
+  elInputBar.classList.toggle("on", tab==="assistant" && consultOK);
+  if(tab!=="assistant"){elBtnPrint.classList.remove("show");elBtnExit.classList.remove("show");elStatusPill.style.display="";}
+  else if(consultOK){elStatusPill.style.display="none";elBtnPrint.classList.add("show");elBtnExit.classList.add("show");}
+  document.getElementById("content").scrollTop=0;
+}
+document.querySelectorAll(".nav-btn").forEach(function(b){
+  b.addEventListener("click",function(){goTab(b.dataset.tab);});
+});
+document.getElementById("qb-assistant").onclick=function(){goTab("assistant");};
+document.getElementById("qb-diagnostic").onclick=function(){goTab("diagnostic");};
+document.getElementById("qb-marche").onclick=function(){goTab("marche");};
+document.getElementById("qb-profil").onclick=function(){goTab("profil");};
+
+// CLÉ API
+document.getElementById("btn-save-key").addEventListener("click",function(){
+  var v=elApiInput.value.trim();
+  if(!v||!v.startsWith("sk-ant")){elApiStatus.textContent="⚠️ Clé invalide";elApiStatus.className="api-status err";return;}
+  CLE_API=v;elApiStatus.textContent="✅ Clé enregistrée !";elApiStatus.className="api-status ok";elApiInput.value="";
+});
+document.getElementById("btn-save-profil").addEventListener("click",function(){
+  var v=document.getElementById("api-input-profil").value.trim();
+  var st=document.getElementById("api-status-profil");
+  if(!v||!v.startsWith("sk-ant")){st.textContent="⚠️ Clé invalide";st.className="api-status err";return;}
+  CLE_API=v;st.textContent="✅ Clé mise à jour !";st.className="api-status ok";document.getElementById("api-input-profil").value="";
+});
+
+// SUGGESTIONS
+var boite=document.getElementById("suggestions");
+SUGS.forEach(function(s){
+  var btn=document.createElement("button");btn.className="sug-btn";btn.textContent=s;
+  btn.addEventListener("click",function(){goTab("assistant");lancer(s);});
+  boite.appendChild(btn);
+});
+
+// CATÉGORIES
+["cultures","elevage","climat","rendement"].forEach(function(cat){
+  document.getElementById("btn-"+cat).addEventListener("click",function(){ouvrirCat(cat);});
+});
+function ouvrirCat(cat){
+  var dejaOuvert=catOuv===cat&&elCatPanel.classList.contains("show");
+  document.querySelectorAll(".feat-btn").forEach(function(b){b.classList.remove("active");});
+  if(dejaOuvert){elCatPanel.classList.remove("show");catOuv=null;return;}
+  catOuv=cat;
+  document.getElementById("btn-"+cat).classList.add("active");
+  var data=CATS[cat];elCatTitle.textContent=data.label;elCatChips.innerHTML="";
+  data.sections.forEach(function(sec){
+    var lbl=document.createElement("div");lbl.className="sec-lbl";lbl.textContent=sec.titre;elCatChips.appendChild(lbl);
+    sec.items.forEach(function(q){
+      var chip=document.createElement("button");chip.className="cat-chip";chip.textContent=q;
+      chip.addEventListener("click",function(){
+        elCatPanel.classList.remove("show");catOuv=null;
+        document.querySelectorAll(".feat-btn").forEach(function(b){b.classList.remove("active");});
+        lancer(q);
       });
       elCatChips.appendChild(chip);
     });
   });
   elCatPanel.classList.remove("show");
-  setTimeout(function() { elCatPanel.classList.add("show"); }, 10);
+  setTimeout(function(){elCatPanel.classList.add("show");},10);
 }
 
-function confirmerSortie() {
-  elModal.classList.remove("show");
-  histo = []; enCharge = false; consultOK = false; catOuv = null; CLE_API = "";
-  elHeroExp.style.display = "";
-  elHeroCmp.style.display = "none";
-  elWelcome.style.display = "";
-  elChat.classList.remove("on"); elChat.innerHTML = "";
-  elInputBar.classList.remove("on");
+// HEADER BTNS
+document.getElementById("btn-start").addEventListener("click",function(){
+  lancer("Bonjour, je suis un fermier agro-pastoral. J'ai besoin d'aide pour améliorer mes rendements.");
+});
+elBtnPrint.addEventListener("click",imprimer);
+elBtnExit.addEventListener("click",function(){elModal.classList.add("show");});
+document.getElementById("modal-bg").addEventListener("click",function(){elModal.classList.remove("show");});
+document.getElementById("btn-continuer").addEventListener("click",function(){elModal.classList.remove("show");});
+document.getElementById("btn-quitter").addEventListener("click",confirmerSortie);
+
+// TEXTAREA
+elTA.addEventListener("input",function(){elTA.style.height="auto";elTA.style.height=elTA.scrollHeight+"px";majEnvoi();});
+elTA.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();envoyer();}});
+elSend.addEventListener("click",function(){envoyer();});
+function majEnvoi(){var a=elTA.value.trim().length>0&&!enCharge;elSend.className="ibtn"+(a?" on":"");}
+
+// MICRO
+(function(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){elMic.style.display="none";return;}
+  micRecog=new SR();micRecog.lang="fr-FR";micRecog.continuous=false;micRecog.interimResults=false;
+  micRecog.onresult=function(e){var t=e.results[0][0].transcript;elTA.value=t;elTA.style.height="auto";elTA.style.height=elTA.scrollHeight+"px";majEnvoi();stopMic();envoyer();};
+  micRecog.onerror=function(){stopMic();};
+  micRecog.onend=function(){if(micOn)stopMic();};
+  elMic.addEventListener("click",function(){micOn?stopMic():startMic();});
+  // Label initial
+  elMic.innerHTML='<span style="font-size:11px;font-weight:700;letter-spacing:.5px">🎤 DÉBUT</span>';
+  elMic.title="Cliquez pour commencer à parler";
+})();
+function startMic(){
+  if(!micRecog)return;
+  micOn=true;
+  elMic.classList.add("mic-on");
+  elMic.innerHTML='<span style="font-size:11px;font-weight:700;letter-spacing:.5px">■ FIN</span>';
+  elMic.title="Cliquez pour arrêter l'enregistrement";
+  micRecog.start();
+}
+function stopMic(){
+  if(!micRecog)return;
+  micOn=false;
+  elMic.classList.remove("mic-on");
+  elMic.innerHTML='<span style="font-size:11px;font-weight:700;letter-spacing:.5px">🎤 DÉBUT</span>';
+  elMic.title="Cliquez pour commencer à parler";
+  try{micRecog.stop();}catch(e){}
+}
+
+// SYNTHÈSE VOCALE
+function nettoyerPourVoix(txt){
+  return txt
+    .replace(/[*_#`~]/g," ")
+    .replace(/[•·▲▼●►]/g," ")
+    .replace(/[^\w\sÀ-ÿ''\-]/g," ")
+    .replace(/\s{2,}/g," ")
+    .trim();
+}
+function lireTexte(txt,btn){
+  if(!synth)return;synth.cancel();
+  if(btn&&btn.classList.contains("speak-on")){btn.textContent="🔊 Écouter";btn.classList.remove("speak-on");return;}
+  var propre=nettoyerPourVoix(txt);
+  var u=new SpeechSynthesisUtterance(propre);u.lang="fr-FR";u.rate=0.92;u.pitch=0.85;
+  // Chercher une voix masculine française
+  var voix=synth.getVoices();
+  var masculin=null;
+  var prefMasc=["Google français","Microsoft Paul","fr-FR-Standard-B","fr-FR-Wavenet-B","Thomas","Nicolas","fr_FR male","Luc","Romain"];
+  for(var i=0;i<prefMasc.length;i++){
+    for(var j=0;j<voix.length;j++){
+      if(voix[j].name.toLowerCase().indexOf(prefMasc[i].toLowerCase())>=0&&voix[j].lang.indexOf("fr")>=0){masculin=voix[j];break;}
+    }
+    if(masculin)break;
+  }
+  // Fallback : première voix fr disponible
+  if(!masculin){for(var k=0;k<voix.length;k++){if(voix[k].lang.indexOf("fr")>=0){masculin=voix[k];break;}}}
+  if(masculin)u.voice=masculin;
+  if(btn){btn.textContent="⏹ Stop";btn.classList.add("speak-on");}
+  u.onend=function(){if(btn){btn.textContent="🔊 Écouter";btn.classList.remove("speak-on");}};
+  u.onerror=function(){if(btn){btn.textContent="🔊 Écouter";btn.classList.remove("speak-on");}};
+  synth.speak(u);
+}
+document.getElementById("toggle-voice").addEventListener("click",function(){
+  voiceOn=!voiceOn;this.classList.toggle("on",voiceOn);
+});
+document.getElementById("toggle-notif").addEventListener("click",function(){this.classList.toggle("on");});
+document.querySelectorAll(".lang-pill").forEach(function(p){
+  p.addEventListener("click",function(){
+    document.querySelectorAll(".lang-pill").forEach(function(x){x.classList.remove("active");});
+    p.classList.add("active");
+    if(micRecog)micRecog.lang=p.dataset.lang==="en"?"en-US":"fr-FR";
+  });
+});
+
+// CHAT
+function verifierCle(){
+  if(!CLE_API){var k=elApiInput.value.trim();if(k&&k.startsWith("sk-ant")){CLE_API=k;return true;}elApiStatus.textContent="⚠️ Entrez votre clé API";elApiStatus.className="api-status err";elApiInput.focus();return false;}
+  return true;
+}
+function lancer(texte){
+  if(!verifierCle())return;
+  if(!paiementOK){pendingTexte=texte;afficherModalPaiement();return;}
+  activerChat();envoyer(texte);
+}
+function activerChat(){
+  if(consultOK)return;consultOK=true;
+  elHExp.style.display="none";elHCmp.style.display="flex";elWelcome.style.display="none";
+  elCatPanel.classList.remove("show");elChat.classList.add("on");elInputBar.classList.add("on");
+  elStatusPill.style.display="none";elBtnPrint.classList.add("show");elBtnExit.classList.add("show");
+}
+function ajouterBulle(role,texte){
+  var row=document.createElement("div");row.className="msg-row "+role;
+  if(role==="bot"){var a=document.createElement("div");a.className="av bot";a.textContent="🌾";row.appendChild(a);}
+  var b=document.createElement("div");b.className="bub "+role;b.textContent=texte;
+  if(role==="bot"&&synth){
+    var acts=document.createElement("div");acts.className="bub-actions";
+    var be=document.createElement("button");be.className="bub-act-btn";be.textContent="🔊 Écouter";
+    be.onclick=function(){lireTexte(texte,be);};acts.appendChild(be);b.appendChild(acts);
+    if(voiceOn&&histo.length>1)setTimeout(function(){lireTexte(texte,null);},300);
+  }
+  row.appendChild(b);
+  if(role==="user"){var a2=document.createElement("div");a2.className="av user";a2.textContent="👨‍🌾";row.appendChild(a2);}
+  elChat.appendChild(row);row.scrollIntoView({behavior:"smooth"});
+}
+function showTyping(){
+  var row=document.createElement("div");row.className="msg-row bot";row.id="typing-row";
+  var a=document.createElement("div");a.className="av bot";a.textContent="🌾";row.appendChild(a);
+  var b=document.createElement("div");b.className="bub bot";b.innerHTML='<div class="tw"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  row.appendChild(b);elChat.appendChild(row);row.scrollIntoView({behavior:"smooth"});
+}
+function hideTyping(){var el=document.getElementById("typing-row");if(el)el.remove();}
+function setSub(t){if(elHcSub)elHcSub.textContent=t;}
+function envoyer(force){
+  var texte=force!==undefined?force:elTA.value.trim();
+  if(!texte||enCharge)return;
+  elTA.value="";elTA.style.height="auto";enCharge=true;majEnvoi();
+  ajouterBulle("user",texte);histo.push({role:"user",content:texte});
+  showTyping();setSub("En train de répondre…");
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":CLE_API,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:PROMPT,messages:histo})
+  }).then(function(r){return r.json();}).then(function(d){
+    var rep=(d.content&&d.content[0]&&d.content[0].text)?d.content[0].text:"Désolé, réessayez.";
+    hideTyping();ajouterBulle("bot",rep);histo.push({role:"assistant",content:rep});
+    setSub("Choisissez un thème ou posez votre question");enCharge=false;majEnvoi();
+  }).catch(function(){
+    hideTyping();ajouterBulle("bot","⚠️ Erreur de connexion. Vérifiez votre internet.");
+    setSub("Choisissez un thème ou posez votre question");enCharge=false;majEnvoi();
+  });
+}
+function confirmerSortie(){
+  elModal.classList.remove("show");histo=[];enCharge=false;consultOK=false;catOuv=null;
+  paiementOK=false;pendingTexte="";
+  document.getElementById("pay-badge").classList.remove("show");
+  if(synth)synth.cancel();
+  elHExp.style.display="";elHCmp.style.display="none";elWelcome.style.display="";
+  elChat.classList.remove("on");elChat.innerHTML="";elInputBar.classList.remove("on");
   elCatPanel.classList.remove("show");
-  document.querySelectorAll(".feat-btn").forEach(function(b) { b.classList.remove("active"); });
-  elTextarea.value = "";
-  elStatusPill.style.display = "";
-  elBtnPrint.classList.remove("show");
-  elBtnExit.classList.remove("show");
-  elApiStatus.textContent = "Entrez votre clé API pour recommencer";
-  elApiStatus.className = "api-status";
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  majEnvoi();
+  document.querySelectorAll(".feat-btn").forEach(function(b){b.classList.remove("active");});
+  elTA.value="";elStatusPill.style.display="";elBtnPrint.classList.remove("show");elBtnExit.classList.remove("show");
+  elApiStatus.textContent="Entrez votre clé API pour recommencer";elApiStatus.className="api-status";
+  majEnvoi();goTab("accueil");
 }
 
-// ─── CHAT AFFICHAGE ────────────────────────────────────────────
-function ajouterBulle(role, texte) {
-  var row = document.createElement("div");
-  row.className = "msg-row " + role;
-  if (role === "bot") { var a = document.createElement("div"); a.className = "av bot"; a.textContent = "🌾"; row.appendChild(a); }
-  var b = document.createElement("div"); b.className = "bub " + role; b.textContent = texte; row.appendChild(b);
-  if (role === "user") { var a2 = document.createElement("div"); a2.className = "av user"; a2.textContent = "👨‍🌾"; row.appendChild(a2); }
-  elChat.appendChild(row);
-  row.scrollIntoView({ behavior: "smooth" });
-}
-
-function showTyping() {
-  var row = document.createElement("div"); row.className = "msg-row bot"; row.id = "typing-row";
-  var a = document.createElement("div"); a.className = "av bot"; a.textContent = "🌾"; row.appendChild(a);
-  var b = document.createElement("div"); b.className = "bub bot";
-  b.innerHTML = '<div class="tw"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-  row.appendChild(b); elChat.appendChild(row); row.scrollIntoView({ behavior: "smooth" });
-}
-
-function hideTyping() { var el = document.getElementById("typing-row"); if (el) el.remove(); }
-
-function setSub(t) { if (elHcSub) elHcSub.textContent = t; }
-
-// ─── ENVOI API ─────────────────────────────────────────────────
-function envoyer(force) {
-  var texte = force !== undefined ? force : elTextarea.value.trim();
-  if (!texte || enCharge) return;
-  elTextarea.value = ""; elTextarea.style.height = "auto";
-  enCharge = true; majEnvoi();
-  ajouterBulle("user", texte);
-  histo.push({ role: "user", content: texte });
-  showTyping();
-  setSub("En train de répondre…");
-
-  fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": CLE_API,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true"
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: PROMPT,
-      messages: histo
+// DIAGNOSTIC
+document.getElementById("dtype-plante").addEventListener("click",function(){
+  diagType="plante";document.getElementById("dtype-plante").classList.add("active");document.getElementById("dtype-animal").classList.remove("active");
+});
+document.getElementById("dtype-animal").addEventListener("click",function(){
+  diagType="animal";document.getElementById("dtype-animal").classList.add("active");document.getElementById("dtype-plante").classList.remove("active");
+});
+document.getElementById("diag-file").addEventListener("change",function(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    diagB64=ev.target.result.split(",")[1];
+    document.getElementById("diag-img").src=ev.target.result;
+    document.getElementById("diag-preview").style.display="block";
+    document.getElementById("btn-analyser").disabled=false;
+    document.getElementById("diag-result").classList.remove("show");
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById("btn-analyser").addEventListener("click",function(){
+  if(!diagB64||!verifierCle())return;
+  var btn=this;btn.disabled=true;btn.textContent="⏳ Analyse en cours…";
+  document.getElementById("diag-result").classList.remove("show");
+  var p="Tu es expert en phytopathologie et santé animale en Afrique subsaharienne. Analyse cette photo d'un "+(diagType==="plante"?"végétal/culture":"animal d'élevage")+" et donne :\n1. Nom du problème en MAJUSCULES\n2. Gravité entre crochets [Faible] [Moyen] ou [Élevé]\n3. Causes probables\n4. Recommandations pratiques immédiates (sans grands moyens)\n5. Quand consulter un expert\nMax 150 mots. Direct et pratique.";
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":CLE_API,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,
+      messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:diagB64}},{type:"text",text:p}]}]
     })
-  }).then(function(r) {
-    return r.json();
-  }).then(function(d) {
-    var rep = (d.content && d.content[0] && d.content[0].text)
-      ? d.content[0].text
-      : "Désolé, je n'ai pas pu répondre. Réessayez.";
-    hideTyping(); ajouterBulle("bot", rep);
-    histo.push({ role: "assistant", content: rep });
-    setSub("Choisissez un thème ou posez votre question");
-    enCharge = false; majEnvoi();
-  }).catch(function(err) {
-    hideTyping(); ajouterBulle("bot", "⚠️ Erreur de connexion. Vérifiez votre internet et réessayez.");
-    setSub("Choisissez un thème ou posez votre question");
-    enCharge = false; majEnvoi();
+  }).then(function(r){return r.json();}).then(function(d){
+    var rep=(d.content&&d.content[0]&&d.content[0].text)?d.content[0].text:"Impossible d'analyser. Vérifiez la qualité de la photo.";
+    diagTxt=rep;
+    var sev="med",sevTxt="⚡ Gravité Moyenne";
+    var rl=rep.toLowerCase();
+    if(rl.indexOf("[élevé]")>=0||rl.indexOf("[eleve]")>=0){sev="high";sevTxt="⚠️ Gravité Élevée";}
+    else if(rl.indexOf("[faible]")>=0){sev="low";sevTxt="✅ Gravité Faible";}
+    var lines=rep.trim().split("\n");
+    var titre=lines[0].replace(/\[.*?\]/g,"").trim();
+    var corps=lines.slice(1).join("\n").trim();
+    document.getElementById("result-sev").className="result-sev sev-"+sev;
+    document.getElementById("result-sev").textContent=sevTxt;
+    document.getElementById("result-title").textContent=titre;
+    document.getElementById("result-body").textContent=corps;
+    document.getElementById("diag-result").classList.add("show");
+    btn.disabled=false;btn.textContent="🔍 Lancer l'analyse IA";
+    if(voiceOn&&synth)setTimeout(function(){lireTexte(titre+". "+corps,null);},400);
+  }).catch(function(){
+    document.getElementById("result-title").textContent="Erreur d'analyse";
+    document.getElementById("result-body").textContent="⚠️ Erreur de connexion.";
+    document.getElementById("diag-result").classList.add("show");
+    btn.disabled=false;btn.textContent="🔍 Lancer l'analyse IA";
   });
+});
+document.getElementById("btn-ask-ai").addEventListener("click",function(){
+  goTab("assistant");
+  lancer("Voici le diagnostic de mon "+diagType+" : "+diagTxt.substring(0,300)+"… Que faire concrètement ?");
+});
+
+// MARCHÉ
+var filtreM="tout";
+document.querySelectorAll(".mfilter").forEach(function(b){
+  b.addEventListener("click",function(){
+    filtreM=b.dataset.cat;
+    document.querySelectorAll(".mfilter").forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    afficherPrix();
+  });
+});
+function afficherPrix(){
+  var grid=document.getElementById("prix-grid");
+  var data=filtreM==="tout"?PRIX:PRIX.filter(function(p){return p.cat===filtreM;});
+  grid.innerHTML="";
+  data.forEach(function(p){
+    var ico=p.t==="up"?"▲":p.t==="down"?"▼":"●";
+    var cls=p.t==="up"?"trend-up":p.t==="down"?"trend-down":"trend-eq";
+    grid.innerHTML+='<div class="prix-item"><div class="prix-ico">'+p.ico+'</div><div class="prix-info"><h4>'+p.nom+'</h4><p>📍 '+p.lieu+'</p></div><div class="prix-val"><div class="montant">'+p.prix+'</div><div class="unite">'+p.unite+'</div><div class="tendance '+cls+'">'+ico+' '+p.d+'</div></div></div>';
+  });
+  var now=new Date();
+  document.getElementById("marche-date").textContent="Données du "+now.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+" · Bénin";
+}
+afficherPrix();
+
+// IMPRESSION
+function imprimer(){
+  if(histo.length===0)return;
+  var now=new Date();
+  var ds=now.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  var ts=now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  var lignes="";
+  histo.forEach(function(m){
+    var u=m.role==="user";
+    var txt=m.content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+    lignes+='<div class="mr '+(u?"mu":"mb")+'"><div class="mm"><span>'+(u?"👨‍🌾":"🌾")+'</span><span class="sn">'+(u?"Vous":"AgroYield")+'</span></div><div class="bb">'+txt+'</div></div>';
+  });
+  var nu=histo.filter(function(m){return m.role==="user";}).length;
+  var nb=histo.filter(function(m){return m.role==="assistant";}).length;
+  var html='<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>AgroYield – Rapport</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"DM Sans",sans-serif;background:#faf8f2;color:#1c1008;padding:40px 20px}.page{max-width:680px;margin:0 auto}.rh{display:flex;justify-content:space-between;border-bottom:2px solid #2a4a1a;padding-bottom:20px;margin-bottom:28px}.rl{display:flex;align-items:center;gap:12px}.lc{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#4a8c28,#2a4a1a);display:flex;align-items:center;justify-content:center;font-size:22px}.li h1{font-family:"Cormorant Garamond",serif;font-size:26px;font-weight:700;font-style:italic;line-height:1}.li p{font-size:10px;color:#6b9b42;letter-spacing:2px;text-transform:uppercase;margin-top:3px}.rm{text-align:right;font-size:12px;color:#5a4020}.rt{text-align:center;margin-bottom:24px;padding:16px;background:#f0f8e4;border:1px solid #c8e0a0;border-radius:12px}.rt h2{font-family:"Cormorant Garamond",serif;font-size:18px;color:#1c3010;margin-bottom:4px}.rt p{font-size:12px;color:#6a8040}.conv{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}.mr{display:flex;flex-direction:column;gap:5px}.mu{align-items:flex-end}.mb{align-items:flex-start}.mm{display:flex;align-items:center;gap:6px}.sn{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#6a5030}.mu .bb{background:linear-gradient(135deg,#3d6b20,#2a4d14);color:#f0f8e0;border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:13px;line-height:1.65;max-width:80%}.mb .bb{background:#fff;color:#2a1c08;border:1px solid #d0e8b0;border-radius:16px 16px 16px 4px;padding:10px 14px;font-size:13px;line-height:1.65;max-width:85%}.rf{border-top:1px solid #d0c090;padding-top:12px;display:flex;justify-content:space-between;font-size:10.5px;color:#8a7040}.br{font-family:"Cormorant Garamond",serif;font-style:italic;color:#4a8c28;font-weight:600}@media print{.mu .bb{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="page"><div class="rh"><div class="rl"><div class="lc">🌾</div><div class="li"><h1>AgroYield</h1><p>Assistant IA Agricole</p></div></div><div class="rm"><div>📅 '+ds+'</div><div style="margin-top:3px">🕐 '+ts+'</div></div></div><div class="rt"><h2>🌱 Rapport de consultation</h2><p>'+nu+' question(s) · '+nb+' réponse(s)</p></div><div class="conv">'+lignes+'</div><div class="rf"><p>Généré par AgroYield IA</p><span class="br">AgroYield</span></div></div><scr'+'ipt>window.onload=function(){window.print()}<\/scr'+'ipt></body></html>';
+  var win=window.open("","_blank");
+  if(win){win.document.write(html);win.document.close();}
 }
 
-// ─── IMPRESSION ────────────────────────────────────────────────
-function imprimer() {
-  if (histo.length === 0) return;
-  var now = new Date();
-  var ds = now.toLocaleDateString("fr-FR", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
-  var ts = now.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" });
-  var lignes = "";
-  histo.forEach(function(m) {
-    var u = m.role === "user";
-    var txt = m.content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
-    lignes += '<div class="mr '+(u?"mu":"mb")+'"><div class="mm"><span>'+(u?"👨‍🌾":"🌾")+'</span><span class="sn">'+(u?"Vous":"AgroYield")+'</span></div><div class="bb">'+txt+'</div></div>';
-  });
-  var nu = histo.filter(function(m){return m.role==="user";}).length;
-  var nb = histo.filter(function(m){return m.role==="assistant";}).length;
-  var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/><title>AgroYield – Rapport</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"DM Sans",sans-serif;background:#faf8f2;color:#1c1008;padding:40px 20px}.page{max-width:680px;margin:0 auto}.rh{display:flex;justify-content:space-between;border-bottom:2px solid #2a4a1a;padding-bottom:20px;margin-bottom:28px}.rl{display:flex;align-items:center;gap:12px}.lc{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#4a8c28,#2a4a1a);display:flex;align-items:center;justify-content:center;font-size:22px}.li h1{font-family:"Cormorant Garamond",serif;font-size:26px;font-weight:700;font-style:italic;line-height:1}.li p{font-size:10px;color:#6b9b42;letter-spacing:2px;text-transform:uppercase;margin-top:3px}.rm{text-align:right;font-size:12px;color:#5a4020}.rt{text-align:center;margin-bottom:24px;padding:16px 20px;background:#f0f8e4;border:1px solid #c8e0a0;border-radius:12px}.rt h2{font-family:"Cormorant Garamond",serif;font-size:18px;color:#1c3010;margin-bottom:4px}.rt p{font-size:12px;color:#6a8040}.conv{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}.mr{display:flex;flex-direction:column;gap:5px}.mu{align-items:flex-end}.mb{align-items:flex-start}.mm{display:flex;align-items:center;gap:6px}.sn{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#6a5030}.mu .bb{background:linear-gradient(135deg,#3d6b20,#2a4d14);color:#f0f8e0;border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:13px;line-height:1.65;max-width:80%}.mb .bb{background:#fff;color:#2a1c08;border:1px solid #d0e8b0;border-radius:16px 16px 16px 4px;padding:10px 14px;font-size:13px;line-height:1.65;max-width:85%}.rf{border-top:1px solid #d0c090;padding-top:12px;display:flex;justify-content:space-between;font-size:10.5px;color:#8a7040}.br{font-family:"Cormorant Garamond",serif;font-style:italic;color:#4a8c28;font-weight:600;font-size:14px}@media print{body{padding:20px}.mu .bb{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="page"><div class="rh"><div class="rl"><div class="lc">🌾</div><div class="li"><h1>AgroYield</h1><p>Assistant IA Agricole</p></div></div><div class="rm"><div>📅 '+ds+'</div><div style="margin-top:3px">🕐 '+ts+'</div></div></div><div class="rt"><h2>🌱 Rapport de consultation agro-pastorale</h2><p>'+nu+' question(s) · '+nb+' réponse(s)</p></div><div class="conv">'+lignes+'</div><div class="rf"><p>Généré par AgroYield IA</p><span class="br">AgroYield</span></div></div><scr'+'ipt>window.onload=function(){window.print()}<\/scr'+'ipt></body></html>';
-  var win = window.open("","_blank");
-  if (win) { win.document.write(html); win.document.close(); }
-}
-
-})(); // fin IIFE
+})();
 </script>
 </body>
 </html>
