@@ -929,83 +929,100 @@ function afficherMeteoErreur(msg){
   document.getElementById("meteo-alerte").style.display="none";
 }
 
-function appelMeteoEtVille(lat,lon){
+function appelMeteoEtVille(lat,lon,villeConnue){
   document.getElementById("meteo-ico").textContent="⏳";
-  document.getElementById("meteo-titre").textContent="Chargement météo…";
+  document.getElementById("meteo-titre").textContent="Météo en cours…";
   document.getElementById("meteo-desc").textContent="Données en cours de récupération";
 
-  // 1. Météo via Open-Meteo (CORS OK, sans clé)
   var urlMeteo="https://api.open-meteo.com/v1/forecast"
     +"?latitude="+lat+"&longitude="+lon
     +"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation"
     +"&daily=precipitation_sum"
     +"&timezone=auto&forecast_days=2";
 
-  // 2. Ville via BigDataCloud (CORS OK, sans clé)
   var urlVille="https://api.bigdatacloud.net/data/reverse-geocode-client"
     +"?latitude="+lat+"&longitude="+lon+"&localityLanguage=fr";
 
-  Promise.all([
-    fetch(urlMeteo).then(function(r){return r.json();}),
-    fetch(urlVille).then(function(r){return r.json();})
-  ]).then(function(res){
-    var meteo=res[0]; var geo=res[1];
-    var cur=meteo.current;
-    var daily=meteo.daily;
-    var temp=Math.round(cur.temperature_2m);
-    var hum=Math.round(cur.relative_humidity_2m);
-    var vent=Math.round(cur.wind_speed_10m);
-    var code=cur.weather_code;
-    var pluieDemain=(daily&&daily.precipitation_sum&&daily.precipitation_sum[1])||0;
-    var ville=geo.locality||geo.city||geo.principalSubdivision||geo.countryName||"Votre zone";
-    afficherMeteo(temp,hum,vent,pluieDemain,code,ville);
-  }).catch(function(e){
-    afficherMeteoErreur("Erreur réseau — vérifiez votre connexion");
-  });
+  // Si on a déjà la ville (depuis IP), on ne fait que la météo
+  if(villeConnue){
+    fetch(urlMeteo)
+      .then(function(r){return r.json();})
+      .then(function(meteo){
+        var cur=meteo.current;
+        var daily=meteo.daily;
+        var temp=Math.round(cur.temperature_2m);
+        var hum=Math.round(cur.relative_humidity_2m);
+        var vent=Math.round(cur.wind_speed_10m);
+        var code=cur.weather_code;
+        var pluieDemain=(daily&&daily.precipitation_sum&&daily.precipitation_sum[1])||0;
+        afficherMeteo(temp,hum,vent,pluieDemain,code,villeConnue);
+      })
+      .catch(function(){ afficherMeteoErreur("Météo indisponible — vérifiez votre connexion"); });
+  } else {
+    // GPS : on récupère météo + ville en parallèle
+    Promise.all([
+      fetch(urlMeteo).then(function(r){return r.json();}),
+      fetch(urlVille).then(function(r){return r.json();})
+    ]).then(function(res){
+      var meteo=res[0]; var geo=res[1];
+      var cur=meteo.current;
+      var daily=meteo.daily;
+      var temp=Math.round(cur.temperature_2m);
+      var hum=Math.round(cur.relative_humidity_2m);
+      var vent=Math.round(cur.wind_speed_10m);
+      var code=cur.weather_code;
+      var pluieDemain=(daily&&daily.precipitation_sum&&daily.precipitation_sum[1])||0;
+      var ville=geo.locality||geo.city||geo.principalSubdivision||geo.countryName||"Votre zone";
+      afficherMeteo(temp,hum,vent,pluieDemain,code,ville);
+    }).catch(function(){ afficherMeteoErreur("Erreur réseau — vérifiez votre connexion"); });
+  }
 }
 
 function chargerMeteo(){
   document.getElementById("meteo-ico").textContent="📍";
   document.getElementById("meteo-titre").textContent="Localisation en cours…";
-  document.getElementById("meteo-desc").textContent="Recherche de votre position GPS";
+  document.getElementById("meteo-desc").textContent="Recherche de votre position";
+
+  // Tente GPS d'abord, puis enchaîne 3 services IP en fallback
+  function parIP(){
+    // Service 1 : ip-api.com (très fiable, CORS OK)
+    fetch("https://ip-api.com/json/?fields=lat,lon,city,regionName,country&lang=fr")
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.lat&&d.lon){ appelMeteoEtVille(d.lat,d.lon,d.city||d.regionName||"Votre zone"); }
+        else { parIP2(); }
+      })
+      .catch(parIP2);
+  }
+  // Service 2 : geojs.io
+  function parIP2(){
+    fetch("https://get.geojs.io/v1/ip/geo.json")
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.latitude&&d.longitude){ appelMeteoEtVille(parseFloat(d.latitude),parseFloat(d.longitude),d.city||"Votre zone"); }
+        else { parIP3(); }
+      })
+      .catch(parIP3);
+  }
+  // Service 3 : ipwho.is
+  function parIP3(){
+    fetch("https://ipwho.is/")
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.latitude&&d.longitude){ appelMeteoEtVille(d.latitude,d.longitude,d.city||"Votre zone"); }
+        else { afficherMeteoErreur("Position indétectable — vérifiez votre connexion"); }
+      })
+      .catch(function(){ afficherMeteoErreur("Position indétectable — vérifiez votre connexion"); });
+  }
 
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
-      function(pos){
-        appelMeteoEtVille(pos.coords.latitude,pos.coords.longitude);
-      },
-      function(err){
-        // GPS refusé ou indisponible → localisation par IP
-        document.getElementById("meteo-desc").textContent="GPS indisponible — localisation par réseau…";
-        fetch("https://freeipapi.com/api/json")
-          .then(function(r){return r.json();})
-          .then(function(d){
-            if(d.latitude&&d.longitude){
-              appelMeteoEtVille(d.latitude,d.longitude);
-            } else {
-              afficherMeteoErreur("Impossible de détecter votre position");
-            }
-          })
-          .catch(function(){
-            afficherMeteoErreur("Position introuvable — activez la localisation");
-          });
-      },
-      {timeout:7000,maximumAge:300000,enableHighAccuracy:false}
+      function(pos){ appelMeteoEtVille(pos.coords.latitude,pos.coords.longitude,null); },
+      function(){ parIP(); },
+      {timeout:6000,maximumAge:300000,enableHighAccuracy:false}
     );
   } else {
-    // Navigateur sans géolocalisation → localisation par IP
-    fetch("https://freeipapi.com/api/json")
-      .then(function(r){return r.json();})
-      .then(function(d){
-        if(d.latitude&&d.longitude){
-          appelMeteoEtVille(d.latitude,d.longitude);
-        } else {
-          afficherMeteoErreur("Géolocalisation non supportée");
-        }
-      })
-      .catch(function(){
-        afficherMeteoErreur("Géolocalisation non supportée sur cet appareil");
-      });
+    parIP();
   }
 }
 
