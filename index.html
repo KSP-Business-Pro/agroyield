@@ -614,14 +614,6 @@ header{flex-shrink:0;padding:14px 16px 11px;display:flex;align-items:center;gap:
       </div>
       <div id="cat-panel"><div class="cat-inner"><div class="cat-title" id="cat-title"></div><div id="cat-chips"></div></div></div>
       <div id="welcome-bot">
-        <div class="apikey-card" id="apikey-section">
-          <label>🔑 Clé API Anthropic</label>
-          <div class="apikey-row">
-            <input type="password" class="api-inp" id="api-input" placeholder="sk-ant-api03-…"/>
-            <button class="btn-save" id="btn-save-key">Enregistrer</button>
-          </div>
-          <div class="api-status" id="api-status">Entrez votre clé API pour commencer</div>
-        </div>
         <button class="btn-start" id="btn-start">Commencer la consultation &nbsp;🚀</button>
         <div class="sec-div">Questions fréquentes</div>
         <div class="suggestions" id="suggestions"></div>
@@ -712,16 +704,6 @@ header{flex-shrink:0;padding:14px 16px 11px;display:flex;align-items:center;gap:
           <div class="api-status" id="pay-config-status">Mode test actif — aucune clé configurée</div>
         </div>
       </div>
-      <div class="setting-group">
-        <div class="sg-title">Clé API Anthropic</div>
-        <div class="apikey-card" style="margin-bottom:0">
-          <label>🔑 Clé API Anthropic</label>
-          <div class="apikey-row">
-            <input type="password" class="api-inp" id="api-input-profil" placeholder="sk-ant-api03-…"/>
-            <button class="btn-save" id="btn-save-profil">Mettre à jour</button>
-          </div>
-          <div class="api-status ok" id="api-status-profil">✅ Clé active</div>
-        </div>
       </div>
     </div>
 
@@ -853,7 +835,7 @@ var elHExp=document.getElementById("hero-exp"),elHCmp=document.getElementById("h
     elCatChips=document.getElementById("cat-chips"),elChat=document.getElementById("chat-area"),
     elInputBar=document.getElementById("input-bar"),elStatusPill=document.getElementById("status-pill"),
     elBtnPrint=document.getElementById("btn-print"),elBtnExit=document.getElementById("btn-exit"),
-    elApiInput=document.getElementById("api-input"),elApiStatus=document.getElementById("api-status"),
+    elApiInput=null,elApiStatus=null,
     elTA=document.getElementById("user-input"),elSend=document.getElementById("send-btn"),
     elMic=document.getElementById("mic-btn"),elModal=document.getElementById("modal-sortie");
 
@@ -1199,18 +1181,7 @@ document.getElementById("qb-diagnostic").onclick=function(){goTab("diagnostic");
 document.getElementById("qb-marche").onclick=function(){goTab("marche");};
 document.getElementById("qb-profil").onclick=function(){goTab("profil");};
 
-// CLÉ API
-document.getElementById("btn-save-key").addEventListener("click",function(){
-  var v=elApiInput.value.trim();
-  if(!v||!v.startsWith("sk-ant")){elApiStatus.textContent="⚠️ Clé invalide";elApiStatus.className="api-status err";return;}
-  CLE_API=v;elApiStatus.textContent="✅ Clé enregistrée !";elApiStatus.className="api-status ok";elApiInput.value="";
-});
-document.getElementById("btn-save-profil").addEventListener("click",function(){
-  var v=document.getElementById("api-input-profil").value.trim();
-  var st=document.getElementById("api-status-profil");
-  if(!v||!v.startsWith("sk-ant")){st.textContent="⚠️ Clé invalide";st.className="api-status err";return;}
-  CLE_API=v;st.textContent="✅ Clé mise à jour !";st.className="api-status ok";document.getElementById("api-input-profil").value="";
-});
+// CLÉ API — intégrée, pas d'interface utilisateur
 
 // SUGGESTIONS
 var boite=document.getElementById("suggestions");
@@ -1340,10 +1311,7 @@ document.querySelectorAll(".lang-pill").forEach(function(p){
 });
 
 // CHAT
-function verifierCle(){
-  if(!CLE_API){var k=elApiInput.value.trim();if(k&&k.startsWith("sk-ant")){CLE_API=k;return true;}elApiStatus.textContent="⚠️ Entrez votre clé API";elApiStatus.className="api-status err";elApiInput.focus();return false;}
-  return true;
-}
+function verifierCle(){ return true; }
 function lancer(texte){
   if(!verifierCle())return;
   if(!paiementOK){pendingTexte=texte;afficherModalPaiement();return;}
@@ -1406,7 +1374,6 @@ function confirmerSortie(){
   elCatPanel.classList.remove("show");
   document.querySelectorAll(".feat-btn").forEach(function(b){b.classList.remove("active");});
   elTA.value="";elStatusPill.style.display="";elBtnPrint.classList.remove("show");elBtnExit.classList.remove("show");
-  elApiStatus.textContent="Entrez votre clé API pour recommencer";elApiStatus.className="api-status";
   majEnvoi();goTab("accueil");
 }
 
