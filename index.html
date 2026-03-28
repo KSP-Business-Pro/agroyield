@@ -559,12 +559,13 @@ header{flex-shrink:0;padding:14px 16px 11px;display:flex;align-items:center;gap:
         <p>📍 Bénin · Assistant prêt à vous accompagner</p>
       </div>
       <div class="meteo-card" id="meteo-card">
-        <div class="meteo-ico" id="meteo-ico">⏳</div>
+        <div class="meteo-ico" id="meteo-ico">📍</div>
         <div class="meteo-info">
           <h3 id="meteo-titre">Localisation en cours…</h3>
-          <p id="meteo-desc">Récupération de la météo</p>
+          <p id="meteo-desc">Recherche de votre position GPS</p>
           <span class="meteo-alerte" id="meteo-alerte" style="display:none"></span>
         </div>
+        <button onclick="chargerMeteo()" style="flex-shrink:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:rgba(245,234,208,.6);font-size:18px;width:38px;height:38px;cursor:pointer;display:flex;align-items:center;justify-content:center" title="Actualiser la météo">🔄</button>
       </div>
       <div class="card">
         <div class="card-title">⚡ Accès rapide</div>
@@ -855,171 +856,162 @@ setTimeout(function(){
 },2400);
 
 // ── MÉTÉO EN TEMPS RÉEL ─────────────────────────────────────────
-// Clé gratuite OpenWeatherMap — 60 appels/min, suffisant pour l'app
-var OWM_KEY = "4b5a26b3a0b31b5c3bcd5d8f94c8e2a1"; // Remplacer par votre clé sur openweathermap.org
+// Open-Meteo : météo gratuite, sans clé, CORS OK
+// BigDataCloud : géocodage inverse gratuit, sans clé, CORS OK
+// freeipapi.com : localisation par IP, CORS OK
 
-var ICONES_METEO = {
-  "01d":"☀️","01n":"🌙","02d":"⛅","02n":"🌙",
-  "03d":"☁️","03n":"☁️","04d":"☁️","04n":"☁️",
-  "09d":"🌧️","09n":"🌧️","10d":"🌦️","10n":"🌧️",
-  "11d":"⛈️","11n":"⛈️","13d":"❄️","13n":"❄️",
-  "50d":"🌫️","50n":"🌫️"
-};
-
-function conseilAgricoleMeteo(temp, pluie, vent, humidite, desc) {
-  var d = desc.toLowerCase();
-  if (pluie > 10)    return "⚠️ Forte pluie — ne pas traiter, surveiller le drainage";
-  if (pluie > 2)     return "🌧️ Pluie prévue — reporter l'épandage d'engrais";
-  if (temp > 38)     return "🌡️ Chaleur extrême — irriguer tôt le matin, protéger les jeunes plants";
-  if (temp > 33)     return "☀️ Forte chaleur — arroser en soirée, ombrager si possible";
-  if (vent > 40)     return "💨 Vent fort — ne pas pulvériser de pesticides";
-  if (humidite > 85) return "💧 Humidité élevée — risque de champignons, surveiller les cultures";
-  if (humidite < 30) return "🌵 Air très sec — augmenter l'irrigation";
-  if (d.indexOf("orag") >= 0) return "⛈️ Orage — mettre les animaux à l'abri";
-  if (temp < 15)     return "🌡️ Températures fraîches — favorable pour certaines cultures maraîchères";
-  return "✅ Conditions favorables — bonne journée pour travailler au champ";
+function codeVersTxt(c){
+  if(c===0)return"Ciel dégagé";
+  if(c<=2)return"Partiellement nuageux";
+  if(c<=3)return"Nuageux";
+  if(c<=49)return"Brouillard";
+  if(c<=59)return"Bruine";
+  if(c<=69)return"Pluie";
+  if(c<=82)return"Averses";
+  if(c<=84)return"Fortes averses";
+  if(c<=99)return"Orage";
+  return"Ciel variable";
+}
+function codeVersIco(c){
+  if(c===0)return"☀️";
+  if(c<=2)return"⛅";
+  if(c<=3)return"☁️";
+  if(c<=49)return"🌫️";
+  if(c<=67)return"🌧️";
+  if(c<=77)return"❄️";
+  if(c<=82)return"🌦️";
+  if(c<=84)return"🌧️";
+  if(c<=99)return"⛈️";
+  return"🌡️";
+}
+function conseilMeteo(temp,pluieDemain,vent,hum){
+  if(pluieDemain>15)return"⚠️ Forte pluie demain — ne pas traiter, surveiller drainage";
+  if(pluieDemain>3) return"🌧️ Pluie demain — reporter l'épandage d'engrais";
+  if(temp>38)       return"🌡️ Chaleur extrême — irriguer tôt le matin";
+  if(temp>33)       return"☀️ Forte chaleur — arroser en soirée, ombrager";
+  if(vent>40)       return"💨 Vent fort — ne pas pulvériser de pesticides";
+  if(hum>88)        return"💧 Humidité élevée — risque champignons sur cultures";
+  if(hum<25)        return"🌵 Air très sec — augmenter l'irrigation";
+  if(temp<15)       return"🌡️ Temps frais — favorable aux cultures maraîchères";
+  return"✅ Bonnes conditions — journée favorable au travail au champ";
 }
 
-function chargerMeteo() {
-  if (!navigator.geolocation) {
-    afficherMeteoErreur("Géolocalisation non disponible sur cet appareil");
-    return;
+function afficherMeteo(temp,hum,vent,pluieDemain,code,ville){
+  var ico=codeVersIco(code);
+  var desc=codeVersTxt(code);
+  var conseil=conseilMeteo(temp,pluieDemain,vent,hum);
+  document.getElementById("meteo-ico").textContent=ico;
+  document.getElementById("meteo-titre").textContent=temp+"°C · "+ville;
+  document.getElementById("meteo-desc").textContent=desc+" · Humidité "+hum+"% · Vent "+vent+" km/h";
+  var al=document.getElementById("meteo-alerte");
+  al.textContent=conseil; al.style.display="inline-block";
+  // Alerte dynamique section alertes
+  var ad=document.getElementById("alerte-meteo-dyn");
+  if(ad){
+    ad.querySelector("strong").textContent="Météo · "+ville;
+    ad.querySelector(".alerte-txt-body").textContent=conseil;
   }
-  document.getElementById("meteo-ico").textContent = "📡";
-  document.getElementById("meteo-titre").textContent = "Localisation…";
-  document.getElementById("meteo-desc").textContent  = "Recherche de votre position";
-
-  navigator.geolocation.getCurrentPosition(
-    function(pos) {
-      var lat = pos.coords.latitude.toFixed(4);
-      var lon = pos.coords.longitude.toFixed(4);
-      appelMeteo(lat, lon);
-    },
-    function(err) {
-      // Fallback: IP-based location via ipapi
-      fetch("https://ipapi.co/json/")
-        .then(function(r){ return r.json(); })
-        .then(function(d){
-          appelMeteo(d.latitude, d.longitude);
-        })
-        .catch(function(){
-          afficherMeteoErreur("Position introuvable — vérifiez votre connexion");
-        });
-    },
-    { timeout: 8000, enableHighAccuracy: false }
-  );
-}
-
-function appelMeteo(lat, lon) {
-  document.getElementById("meteo-ico").textContent  = "⏳";
-  document.getElementById("meteo-titre").textContent = "Chargement météo…";
-  document.getElementById("meteo-desc").textContent  = "Connexion au serveur";
-
-  // Utiliser Open-Meteo (100% gratuit, sans clé API)
-  var url = "https://api.open-meteo.com/v1/forecast"
-    + "?latitude=" + lat
-    + "&longitude=" + lon
-    + "&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation"
-    + "&daily=precipitation_sum,temperature_2m_max,temperature_2m_min"
-    + "&timezone=auto"
-    + "&forecast_days=2";
-
-  fetch(url)
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      var cur   = d.current;
-      var daily = d.daily;
-      var temp  = Math.round(cur.temperature_2m);
-      var hum   = Math.round(cur.relative_humidity_2m);
-      var vent  = Math.round(cur.wind_speed_10m);
-      var pluie = cur.precipitation || 0;
-      var code  = cur.weather_code;
-      var pluieDemain = daily && daily.precipitation_sum ? (daily.precipitation_sum[1] || 0) : 0;
-
-      // Obtenir le nom de la ville via reverse geocoding (nominatim, gratuit)
-      fetch("https://nominatim.openstreetmap.org/reverse?lat=" + lat + "&lon=" + lon + "&format=json&accept-language=fr")
-        .then(function(r2){ return r2.json(); })
-        .then(function(geo){
-          var ville = geo.address.city || geo.address.town || geo.address.village || geo.address.county || "Votre zone";
-          afficherMeteo(temp, hum, vent, pluie, pluieDemain, code, ville);
-        })
-        .catch(function(){
-          afficherMeteo(temp, hum, vent, pluie, pluieDemain, code, "Votre zone");
-        });
-    })
-    .catch(function(){
-      afficherMeteoErreur("Météo indisponible — vérifiez votre connexion internet");
-    });
-}
-
-function codeVersTxt(code) {
-  // WMO Weather interpretation codes
-  if (code === 0)                   return "Ciel dégagé";
-  if (code <= 2)                    return "Partiellement nuageux";
-  if (code <= 3)                    return "Nuageux";
-  if (code <= 49)                   return "Brouillard";
-  if (code <= 59)                   return "Bruine";
-  if (code <= 69)                   return "Pluie";
-  if (code <= 79)                   return "Averses de neige";
-  if (code <= 82)                   return "Averses";
-  if (code <= 84)                   return "Averses fortes";
-  if (code <= 99)                   return "Orage";
-  return "Conditions variables";
-}
-
-function codeVersIco(code) {
-  if (code === 0)   return "☀️";
-  if (code <= 2)    return "⛅";
-  if (code <= 3)    return "☁️";
-  if (code <= 49)   return "🌫️";
-  if (code <= 67)   return "🌧️";
-  if (code <= 77)   return "❄️";
-  if (code <= 82)   return "🌦️";
-  if (code <= 84)   return "🌧️";
-  if (code <= 99)   return "⛈️";
-  return "🌡️";
-}
-
-function afficherMeteo(temp, hum, vent, pluie, pluieDemain, code, ville) {
-  var ico  = codeVersIco(code);
-  var desc = codeVersTxt(code);
-  var conseil = conseilAgricoleMeteo(temp, pluieDemain, vent, hum, desc);
-
-  document.getElementById("meteo-ico").textContent   = ico;
-  document.getElementById("meteo-titre").textContent  = temp + "°C · " + ville;
-  document.getElementById("meteo-desc").textContent   = desc + " · Humidité " + hum + "% · Vent " + vent + " km/h";
-
-  var alerteEl = document.getElementById("meteo-alerte");
-  alerteEl.textContent    = conseil;
-  alerteEl.style.display  = "inline-block";
-
-  // Mettre à jour l'alerte météo dans la section "Alertes du jour"
-  var alerteMeteo = document.getElementById("alerte-meteo-dyn");
-  if (alerteMeteo) {
-    alerteMeteo.querySelector("strong").textContent = "Météo · " + ville;
-    alerteMeteo.querySelector(".alerte-txt-body").textContent = conseil;
-  }
-
-  // Couleur de fond selon météo
-  var card = document.getElementById("meteo-card");
-  if (code >= 80 || (pluie > 5)) {
-    card.style.background = "linear-gradient(135deg,rgba(74,100,217,.15),rgba(42,60,120,.18))";
-    card.style.borderColor = "rgba(74,100,217,.28)";
-  } else if (code === 0 || code === 1) {
-    card.style.background = "linear-gradient(135deg,rgba(240,184,64,.10),rgba(42,74,26,.15))";
-    card.style.borderColor = "rgba(240,184,64,.22)";
+  // Couleur fond
+  var card=document.getElementById("meteo-card");
+  if(code>=80||pluieDemain>5){
+    card.style.background="linear-gradient(135deg,rgba(60,80,200,.14),rgba(30,50,120,.18))";
+    card.style.borderColor="rgba(80,110,220,.28)";
+  } else if(code<=1){
+    card.style.background="linear-gradient(135deg,rgba(240,184,64,.12),rgba(60,100,30,.16))";
+    card.style.borderColor="rgba(240,184,64,.24)";
   }
 }
 
-function afficherMeteoErreur(msg) {
-  document.getElementById("meteo-ico").textContent   = "📡";
-  document.getElementById("meteo-titre").textContent  = "Météo indisponible";
-  document.getElementById("meteo-desc").textContent   = msg;
-  document.getElementById("meteo-alerte").style.display = "none";
+function afficherMeteoErreur(msg){
+  document.getElementById("meteo-ico").textContent="📡";
+  document.getElementById("meteo-titre").textContent="Météo indisponible";
+  document.getElementById("meteo-desc").textContent=msg;
+  document.getElementById("meteo-alerte").style.display="none";
 }
 
-// Lancer au démarrage
+function appelMeteoEtVille(lat,lon){
+  document.getElementById("meteo-ico").textContent="⏳";
+  document.getElementById("meteo-titre").textContent="Chargement météo…";
+  document.getElementById("meteo-desc").textContent="Données en cours de récupération";
+
+  // 1. Météo via Open-Meteo (CORS OK, sans clé)
+  var urlMeteo="https://api.open-meteo.com/v1/forecast"
+    +"?latitude="+lat+"&longitude="+lon
+    +"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation"
+    +"&daily=precipitation_sum"
+    +"&timezone=auto&forecast_days=2";
+
+  // 2. Ville via BigDataCloud (CORS OK, sans clé)
+  var urlVille="https://api.bigdatacloud.net/data/reverse-geocode-client"
+    +"?latitude="+lat+"&longitude="+lon+"&localityLanguage=fr";
+
+  Promise.all([
+    fetch(urlMeteo).then(function(r){return r.json();}),
+    fetch(urlVille).then(function(r){return r.json();})
+  ]).then(function(res){
+    var meteo=res[0]; var geo=res[1];
+    var cur=meteo.current;
+    var daily=meteo.daily;
+    var temp=Math.round(cur.temperature_2m);
+    var hum=Math.round(cur.relative_humidity_2m);
+    var vent=Math.round(cur.wind_speed_10m);
+    var code=cur.weather_code;
+    var pluieDemain=(daily&&daily.precipitation_sum&&daily.precipitation_sum[1])||0;
+    var ville=geo.locality||geo.city||geo.principalSubdivision||geo.countryName||"Votre zone";
+    afficherMeteo(temp,hum,vent,pluieDemain,code,ville);
+  }).catch(function(e){
+    afficherMeteoErreur("Erreur réseau — vérifiez votre connexion");
+  });
+}
+
+function chargerMeteo(){
+  document.getElementById("meteo-ico").textContent="📍";
+  document.getElementById("meteo-titre").textContent="Localisation en cours…";
+  document.getElementById("meteo-desc").textContent="Recherche de votre position GPS";
+
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      function(pos){
+        appelMeteoEtVille(pos.coords.latitude,pos.coords.longitude);
+      },
+      function(err){
+        // GPS refusé ou indisponible → localisation par IP
+        document.getElementById("meteo-desc").textContent="GPS indisponible — localisation par réseau…";
+        fetch("https://freeipapi.com/api/json")
+          .then(function(r){return r.json();})
+          .then(function(d){
+            if(d.latitude&&d.longitude){
+              appelMeteoEtVille(d.latitude,d.longitude);
+            } else {
+              afficherMeteoErreur("Impossible de détecter votre position");
+            }
+          })
+          .catch(function(){
+            afficherMeteoErreur("Position introuvable — activez la localisation");
+          });
+      },
+      {timeout:7000,maximumAge:300000,enableHighAccuracy:false}
+    );
+  } else {
+    // Navigateur sans géolocalisation → localisation par IP
+    fetch("https://freeipapi.com/api/json")
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.latitude&&d.longitude){
+          appelMeteoEtVille(d.latitude,d.longitude);
+        } else {
+          afficherMeteoErreur("Géolocalisation non supportée");
+        }
+      })
+      .catch(function(){
+        afficherMeteoErreur("Géolocalisation non supportée sur cet appareil");
+      });
+  }
+}
+
+// Lancer immédiatement
 chargerMeteo();
+
 
 // ── PAIEMENT ────────────────────────────────────────────────────
 function genTxId(){return"AY"+Date.now()+Math.floor(Math.random()*9999);}
