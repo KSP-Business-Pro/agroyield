@@ -780,7 +780,7 @@ header{flex-shrink:0;padding:14px 16px 11px;display:flex;align-items:center;gap:
 (function(){
 "use strict";
 
-var CLE_API = ""; // Clé sécurisée côté serveur
+var CLE_API = "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";
 
 var PROMPT = "Tu es AgroYield, assistant IA expert en agriculture agro-pastorale africaine.\n15 problèmes clés : 1.Pluie 2.Sol 3.Semences 4.Intrants 5.Rendements 6.Ravageurs 7.Irrigation 8.Post-récolte 9.Marchés 10.Transformation 11.Fourrage 12.Maladies animales 13.Productivité laitière 14.Conflits terre/eau 15.Financement.\nRègle : réponses pratiques Afrique, max 160 mots, solutions sans grands moyens, encourage le paysan.";
 
@@ -1351,9 +1351,9 @@ function envoyer(force){
   elTA.value="";elTA.style.height="auto";enCharge=true;majEnvoi();
   ajouterBulle("user",texte);histo.push({role:"user",content:texte});
   showTyping();setSub("En train de répondre…");
-  fetch("/api/chat",{
+  fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{"Content-Type":"application/json","x-api-key":CLE_API,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
     body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:PROMPT,messages:histo})
   }).then(function(r){return r.json();}).then(function(d){
     var rep=(d.content&&d.content[0]&&d.content[0].text)?d.content[0].text:("Erreur: "+(d.error||"Réessayez."));
@@ -1402,9 +1402,9 @@ document.getElementById("btn-analyser").addEventListener("click",function(){
   var btn=this;btn.disabled=true;btn.textContent="⏳ Analyse en cours…";
   document.getElementById("diag-result").classList.remove("show");
   var p="Tu es expert en phytopathologie et santé animale en Afrique subsaharienne. Analyse cette photo d'un "+(diagType==="plante"?"végétal/culture":"animal d'élevage")+" et donne :\n1. Nom du problème en MAJUSCULES\n2. Gravité entre crochets [Faible] [Moyen] ou [Élevé]\n3. Causes probables\n4. Recommandations pratiques immédiates (sans grands moyens)\n5. Quand consulter un expert\nMax 150 mots. Direct et pratique.";
-  fetch("/api/chat",{
+  fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{"Content-Type":"application/json","x-api-key":CLE_API,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
     body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,
       messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:diagB64}},{type:"text",text:p}]}]
     })
