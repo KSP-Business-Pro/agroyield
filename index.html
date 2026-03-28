@@ -1356,11 +1356,12 @@ function envoyer(force){
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:PROMPT,messages:histo})
   }).then(function(r){return r.json();}).then(function(d){
-    var rep=(d.content&&d.content[0]&&d.content[0].text)?d.content[0].text:"Désolé, réessayez.";
-    hideTyping();ajouterBulle("bot",rep);histo.push({role:"assistant",content:rep});
+    var rep=(d.content&&d.content[0]&&d.content[0].text)?d.content[0].text:("Erreur: "+(d.error||"Réessayez."));
+    hideTyping();ajouterBulle("bot",rep);
+    if(d.content&&d.content[0]){histo.push({role:"assistant",content:rep});}
     setSub("Choisissez un thème ou posez votre question");enCharge=false;majEnvoi();
-  }).catch(function(){
-    hideTyping();ajouterBulle("bot","⚠️ Erreur de connexion. Vérifiez votre internet.");
+  }).catch(function(e){
+    hideTyping();ajouterBulle("bot","⚠️ Erreur réseau: "+e.message);
     setSub("Choisissez un thème ou posez votre question");enCharge=false;majEnvoi();
   });
 }
