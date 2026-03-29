@@ -2686,8 +2686,12 @@ function demanderConseilIA(){
   var intrants=document.getElementById("calc-intrants-val").textContent;
   var revenu=document.getElementById("calc-revenu").textContent;
   var benefice=document.getElementById("calc-benefice").textContent;
+  var msg="J'ai "+surface+" ha de "+calcCultureNom+". Mes intrants coûtent "+intrants+". Mon revenu estimé est "+revenu+" FCFA et mon bénéfice "+benefice+" FCFA. Comment améliorer ma rentabilité ?";
   goTab("assistant");
-  lancer("J'ai "+surface+" ha de "+calcCultureNom+". Mes intrants coûtent "+intrants+". Mon revenu estimé est "+revenu+" FCFA et mon bénéfice "+benefice+" FCFA. Comment améliorer ma rentabilité ?");
+  // Activer le chat directement sans passer par la vérification de paiement
+  if(!paiementOK){pendingTexte=msg;afficherModalPaiement();return;}
+  activerChat();
+  envoyer(msg);
 }
 /* ── ONBOARDING (amélioration 5) ── */
 var OB_STEPS=[
