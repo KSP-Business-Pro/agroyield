@@ -1188,6 +1188,7 @@ header{
   font-family:var(--font-body);transition:all 0.18s;
 }
 .loc-sug:hover{background:rgba(109,191,58,0.12);border-color:rgba(109,191,58,0.25);color:#f4ead0}
+@keyframes skPulse{0%,100%{opacity:0.5}50%{opacity:1}}
 /* Bouton arrêt accueil */
 #btn-arret-accueil:hover{
   background:rgba(220,60,50,0.15) !important;
@@ -1448,14 +1449,21 @@ header{
     <div class="screen active" id="screen-accueil">
       <div class="welcome-msg">
         <span class="ico">🌱</span>
-        <h2>Bonjour, <em>Fermier !</em></h2>
+        <h2>Bonjour, <em id="accueil-prenom">Fermier !</em></h2>
         <p>📍 <span id="accueil-loc">Bénin</span> · Votre assistant IA est prêt</p>
       </div>
       <div class="meteo-card" id="meteo-card">
-        <div class="meteo-ico" id="meteo-ico">📍</div>
+        <div class="meteo-ico" id="meteo-ico">
+          <!-- Skeleton -->
+          <div id="meteo-skeleton-ico" style="width:42px;height:42px;border-radius:50%;background:rgba(244,234,208,0.10);animation:skPulse 1.4s ease-in-out infinite"></div>
+        </div>
         <div class="meteo-info" style="flex:1">
-          <h3 id="meteo-titre">Localisation en cours…</h3>
-          <p id="meteo-desc">Recherche de votre position</p>
+          <div id="meteo-skeleton" style="display:block">
+            <div style="height:16px;width:70%;background:rgba(244,234,208,0.10);border-radius:8px;margin-bottom:8px;animation:skPulse 1.4s ease-in-out infinite"></div>
+            <div style="height:12px;width:50%;background:rgba(244,234,208,0.07);border-radius:8px;animation:skPulse 1.4s ease-in-out infinite 0.2s"></div>
+          </div>
+          <h3 id="meteo-titre" style="display:none">Localisation en cours…</h3>
+          <p id="meteo-desc" style="display:none">Recherche de votre position</p>
           <span class="meteo-alerte" id="meteo-alerte" style="display:none"></span>
           <div id="ville-search-wrap" style="display:none;margin-top:9px;flex-direction:column;gap:7px">
             <input id="ville-input" type="text" placeholder="Entrez votre ville : Parakou…"
@@ -1512,7 +1520,7 @@ header{
           <div id="hero-exp">
             <div class="hero-badge">✦ Intelligence Agricole ✦</div>
             <span class="hero-icon">🌱</span>
-            <h2>Bonjour, <em>Fermier !</em></h2>
+            <h2>Bonjour, <em id="hero-prenom">Fermier !</em></h2>
             <p>Expert en agriculture agro-pastorale africaine.<br>Je vous aide à <strong>maximiser vos rendements</strong>.</p>
           </div>
           <div id="hero-cmp"><div class="hc-ico">🌱</div><div class="hc-txt"><h3>AgroYield — à votre service</h3><p id="hc-sub">Choisissez un thème ou posez votre question</p></div></div>
@@ -1944,7 +1952,27 @@ setInterval(rotateDemoMsg, 5000);
    APP LOGIC
 ═══════════════════════════════════════════ */
 
-var PROMPT = "Tu es AgroYield, conseiller agricole de confiance pour les petits fermiers du Bénin et d'Afrique de l'Ouest. Tu parles comme un ami qui connaît bien l'agriculture, pas comme un livre.\n\nFORMAT OBLIGATOIRE pour chaque réponse :\n1️⃣ [Action immédiate — ce qu'il faut faire aujourd'hui]\n2️⃣ [Action suivante — dans les prochains jours]\n3️⃣ [Résultat attendu — ce que le fermier va voir]\n\n⚠️ Si urgent : ajouter une ligne \"📞 Appelez un vétérinaire / agronome si : [condition précise]\"\n\nRègles STRICTES :\n- Maximum 3 étapes numérotées, jamais plus\n- Chaque étape = 1 seule phrase courte et concrète\n- Zéro jargon technique — parler comme au marché\n- Citer des produits, plantes, pratiques disponibles au Bénin\n- Toujours terminer par une phrase d'encouragement courte\n- Exemples locaux : Parakou, Cotonou, marché de Dantokpa, maïs local, neem, etc.\n- Maximum 120 mots au total";
+var PROMPT_BASE = "Tu es AgroYield, conseiller agricole de confiance pour les petits fermiers du Bénin et d'Afrique de l'Ouest. Tu parles comme un ami qui connaît bien l'agriculture, pas comme un livre.\n\nFORMAT OBLIGATOIRE pour chaque réponse :\n1️⃣ [Action immédiate — ce qu'il faut faire aujourd'hui]\n2️⃣ [Action suivante — dans les prochains jours]\n3️⃣ [Résultat attendu — ce que le fermier va voir]\n\n⚠️ Si urgent : ajouter \"📞 Appelez un vétérinaire / agronome si : [condition précise]\"\n\nRègles STRICTES :\n- Maximum 3 étapes numérotées, jamais plus\n- Chaque étape = 1 seule phrase courte et concrète\n- Zéro jargon technique — parler comme au marché\n- Citer des produits disponibles au Bénin\n- Toujours terminer par une phrase d'encouragement\n- Maximum 120 mots au total";
+
+function getSaison(){
+  var m=new Date().getMonth()+1;
+  if(m>=4&&m<=7)return"grande saison des pluies (avril-juillet)";
+  if(m>=8&&m<=9)return"petite saison sèche (août-septembre)";
+  if(m>=10&&m<=11)return"petite saison des pluies (octobre-novembre)";
+  return"grande saison sèche (décembre-mars)";
+}
+
+function buildPROMPT(){
+  var prenom=userPrenom||"Fermier";
+  var ville=(function(){try{return localStorage.getItem("ay_ville")||"Bénin";}catch(e){return"Bénin";}})();
+  var activites=selectedActivites&&selectedActivites.length>0?selectedActivites.join(", "):"agriculture générale";
+  var saison=getSaison();
+  var lang=userLang||"fr";
+  var langInstr=lang==="fon"?" Réponds en Fon (langue locale béninoise).":lang==="yo"?" Réponds en Yoruba.":lang==="en"?" Reply in English.":"";
+  return PROMPT_BASE+"\n\nCONTEXTE DE L'AGRICULTEUR :\n- Prénom : "+prenom+"\n- Localisation : "+ville+"\n- Activités : "+activites+"\n- Saison actuelle : "+saison+"\n\nAdapte TOUS tes conseils à cette saison et à ces cultures spécifiques. Appelle l'agriculteur par son prénom."+langInstr;
+}
+
+var PROMPT = buildPROMPT();
 
 var CATS = {
   cultures:{label:"🌽 Cultures",sections:[
@@ -2033,6 +2061,10 @@ function conseilMeteo(temp,pluieDemain,vent,hum){
   return"✅ Bonnes conditions — journée favorable au travail";
 }
 function afficherMeteo(temp,hum,vent,pluieDemain,code,ville,approx){
+  var sk=document.getElementById("meteo-skeleton");if(sk)sk.style.display="none";
+  var skIco=document.getElementById("meteo-skeleton-ico");if(skIco)skIco.style.display="none";
+  var titre=document.getElementById("meteo-titre");if(titre)titre.style.display="";
+  var desc=document.getElementById("meteo-desc");if(desc)desc.style.display="";
   var ico=codeVersIco(code),conseil=conseilMeteo(temp,pluieDemain,vent,hum);
   document.getElementById("meteo-ico").textContent=ico;
   document.getElementById("meteo-titre").textContent=temp+"°C · "+(approx?ville+" ⚠️":ville);
@@ -2042,20 +2074,22 @@ function afficherMeteo(temp,hum,vent,pluieDemain,code,ville,approx){
   var al=document.getElementById("meteo-alerte");al.textContent=conseil;al.style.display="inline-block";
   var ad=document.getElementById("alerte-meteo-dyn");
   if(ad){ad.querySelector("strong").textContent="Météo · "+ville;ad.querySelector(".alerte-txt-body").textContent=conseil;}
-  // ── Synchroniser la localisation dans toute l'interface ──
-  var villeCourte = ville.split(",")[0].trim(); // ex: "Parakou" depuis "Parakou, Borgou"
-  var locText = ville + ", Bénin";
-  var elLocTxt = document.getElementById("profil-loc-txt");
-  var elLocHdr = document.getElementById("profil-loc-header");
-  var elAccueilLoc = document.getElementById("accueil-loc");
-  if(elLocTxt) elLocTxt.textContent = locText;
-  if(elLocHdr) elLocHdr.textContent = "📍 " + ville + " · Agriculteur / Éleveur";
-  if(elAccueilLoc) elAccueilLoc.textContent = villeCourte + ", Bénin";
+  var villeCourte=ville.split(",")[0].trim();
+  var elLocTxt=document.getElementById("profil-loc-txt");
+  var elLocHdr=document.getElementById("profil-loc-header");
+  var elAccueilLoc=document.getElementById("accueil-loc");
+  if(elLocTxt)elLocTxt.textContent=ville+", Bénin";
+  if(elLocHdr)elLocHdr.textContent="📍 "+ville+" · Agriculteur / Éleveur";
+  if(elAccueilLoc)elAccueilLoc.textContent=villeCourte+", Bénin";
+  try{localStorage.setItem("ay_ville",ville);}catch(e){}
   var card=document.getElementById("meteo-card");
   if(code>=80||pluieDemain>5){card.style.background="linear-gradient(135deg,rgba(60,80,200,.14),rgba(30,50,120,.18))";card.style.borderColor="rgba(80,110,220,.28)";}
   else if(code<=1){card.style.background="linear-gradient(135deg,rgba(240,184,64,.12),rgba(60,100,30,.16))";card.style.borderColor="rgba(240,184,64,.24)";}
 }
 function afficherMeteoErreur(msg){
+  var sk=document.getElementById("meteo-skeleton");if(sk)sk.style.display="none";
+  var titre=document.getElementById("meteo-titre");if(titre)titre.style.display="";
+  var desc=document.getElementById("meteo-desc");if(desc)desc.style.display="";
   document.getElementById("meteo-ico").textContent="📡";
   document.getElementById("meteo-titre").textContent="Météo indisponible";
   document.getElementById("meteo-desc").textContent=msg;
@@ -2387,17 +2421,26 @@ function showTyping(){
 }
 function hideTyping(){var el=document.getElementById("typing-row");if(el)el.remove();}
 function setSub(t){if(elHcSub)elHcSub.textContent=t;}
+var dernierMessage="";
 function envoyer(force){
   var texte=force!==undefined?force:elTA.value.trim();
   if(!texte||enCharge)return;
+  dernierMessage=texte;
   elTA.value="";elTA.style.height="auto";enCharge=true;majEnvoi();
   ajouterBulle("user",texte);histo.push({role:"user",content:texte});
   showTyping();setSub("En train de répondre…");
+  // Rebuild prompt with latest profile context each time
+  PROMPT=buildPROMPT();
+  var t=setTimeout(function(){
+    hideTyping();
+    afficherErreurRetry("⏱️ La réponse prend trop de temps. Vérifiez votre connexion.");
+    enCharge=false;majEnvoi();
+  },20000);
   fetch("/api/chat",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:PROMPT,messages:histo})
-  }).then(function(r){return r.json();}).then(function(d){
+  }).then(function(r){clearTimeout(t);return r.json();}).then(function(d){
     var rep;
     if(d.content&&d.content[0]&&d.content[0].text){rep=d.content[0].text;histo.push({role:"assistant",content:rep});}
     else if(d.error){var msg=typeof d.error==="object"?d.error.message:d.error;rep="⚠️ "+msg;}
@@ -2405,9 +2448,27 @@ function envoyer(force){
     hideTyping();ajouterBulle("bot",rep);
     setSub("Choisissez un thème ou posez votre question");enCharge=false;majEnvoi();
   }).catch(function(){
-    hideTyping();ajouterBulle("bot","⚠️ Erreur réseau. Vérifiez votre connexion.");
-    setSub("Choisissez un thème ou posez votre question");enCharge=false;majEnvoi();
+    clearTimeout(t);
+    hideTyping();
+    afficherErreurRetry("📡 Pas de connexion. Allez dans une zone avec du réseau et appuyez sur Réessayer.");
+    enCharge=false;majEnvoi();
   });
+}
+function afficherErreurRetry(msg){
+  var row=document.createElement("div");row.className="msg-row bot";row.id="error-row";
+  var a=document.createElement("div");a.className="av bot";a.textContent="🌾";row.appendChild(a);
+  var b=document.createElement("div");b.className="bub bot";
+  b.innerHTML='<div style="margin-bottom:8px">'+msg+'</div>';
+  var btn=document.createElement("button");
+  btn.style.cssText="background:rgba(109,191,58,0.12);border:1px solid rgba(109,191,58,0.25);border-radius:10px;padding:8px 16px;color:var(--lime2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body)";
+  btn.textContent="🔄 Réessayer";
+  btn.onclick=function(){
+    var er=document.getElementById("error-row");if(er)er.remove();
+    histo.pop();
+    envoyer(dernierMessage);
+  };
+  b.appendChild(btn);row.appendChild(b);
+  elChat.appendChild(row);row.scrollIntoView({behavior:"smooth"});
 }
 function confirmerSortie(){
   elModal.classList.remove("show");histo=[];enCharge=false;consultOK=false;catOuv=null;
@@ -2754,7 +2815,330 @@ function lancerOnboarding(){
 var _launchAppOrig=launchApp;
 launchApp=function(){_launchAppOrig();setTimeout(lancerOnboarding,600);};
 
-/* ── NAVIGATION : ajouter "calculateur" déjà câblé ci-dessus ── */
+/* ══════════════════════════════════════════════
+   URGENT 6 — SAUVEGARDE PROFIL localStorage
+══════════════════════════════════════════════ */
+var userPrenom="",userLang="fr";
+
+function sauvegarderProfil(){
+  try{
+    localStorage.setItem("ay_prenom",userPrenom);
+    localStorage.setItem("ay_lang",userLang);
+    localStorage.setItem("ay_activites",JSON.stringify(selectedActivites));
+  }catch(e){}
+}
+function chargerProfil(){
+  try{
+    var p=localStorage.getItem("ay_prenom");if(p)userPrenom=p;
+    var l=localStorage.getItem("ay_lang");if(l)userLang=l;
+    var a=localStorage.getItem("ay_activites");if(a)selectedActivites=JSON.parse(a);
+    var v=localStorage.getItem("ay_ville");
+    if(v){
+      document.getElementById("profil-loc-txt").textContent=v+", Bénin";
+      document.getElementById("profil-loc-header").textContent="📍 "+v+" · Agriculteur / Éleveur";
+      document.getElementById("accueil-loc").textContent=v.split(",")[0].trim()+", Bénin";
+    }
+  }catch(e){}
+  majAffichagePrenom();
+  majActivitesDisplay();
+}
+function majAffichagePrenom(){
+  var nom=userPrenom||(userPrenom.length>0?userPrenom:"Fermier");
+  var affiche=userPrenom.length>0?userPrenom+"&nbsp;!":"Fermier&nbsp;!";
+  var ep=document.getElementById("accueil-prenom");if(ep)ep.innerHTML=affiche;
+  var hp=document.getElementById("hero-prenom");if(hp)hp.innerHTML=affiche;
+  var pn=document.getElementById("profil-nom-display");if(pn)pn.textContent=userPrenom.length>0?userPrenom+" — Mon exploitation":"Mon exploitation";
+}
+function majActivitesDisplay(){
+  var el=document.getElementById("profil-activites-txt");
+  if(el&&selectedActivites.length>0)el.textContent=selectedActivites.join(", ");
+}
+
+// Sauvegarder quand langue change
+document.querySelectorAll(".lang-pill").forEach(function(p){
+  p.addEventListener("click",function(){
+    userLang=p.dataset.lang||"fr";
+    sauvegarderProfil();
+  });
+});
+
+/* ── MODAL PRÉNOM (premier lancement ou via profil) ── */
+// Insérer modal prénom dans le DOM
+(function(){
+  var modal=document.createElement("div");
+  modal.id="modal-prenom";
+  modal.className="modal-ov";
+  modal.style.zIndex="700";
+  modal.innerHTML='<div class="modal-bg" id="modal-prenom-bg"></div><div class="modal-box" style="max-width:320px;text-align:center"><span class="modal-emo">👨‍🌾</span><h3 style="margin-bottom:8px">Comment vous appelez-vous ?</h3><p style="font-size:12px;color:rgba(244,234,208,0.45);margin-bottom:16px">Je personnaliserai vos conseils avec votre prénom</p><input id="prenom-input" type="text" placeholder="Entrez votre prénom…" style="width:100%;background:rgba(244,234,208,0.07);border:2px solid rgba(244,234,208,0.15);border-radius:12px;padding:12px 14px;color:#f4ead0;font-size:15px;font-family:var(--font-body);outline:none;margin-bottom:14px"/><div style="display:flex;gap:8px"><button class="btn-cancel" id="btn-prenom-skip" style="flex:1">Ignorer</button><button id="btn-prenom-ok" style="flex:2;padding:12px;background:linear-gradient(135deg,#4a8c28,#2a5514);border:none;border-radius:12px;color:#f4ead0;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body)">✓ Confirmer</button></div></div>';
+  document.getElementById("app").appendChild(modal);
+  document.getElementById("modal-prenom-bg").onclick=function(){modal.classList.remove("show");};
+  document.getElementById("btn-prenom-skip").onclick=function(){modal.classList.remove("show");};
+  document.getElementById("btn-prenom-ok").onclick=function(){
+    var v=document.getElementById("prenom-input").value.trim();
+    if(v){userPrenom=v;majAffichagePrenom();sauvegarderProfil();}
+    modal.classList.remove("show");
+  };
+  document.getElementById("prenom-input").onkeydown=function(e){if(e.key==="Enter")document.getElementById("btn-prenom-ok").click();};
+})();
+
+// Cliquer sur le nom du profil pour le modifier
+document.getElementById("profil-nom-display").style.cursor="pointer";
+document.getElementById("profil-nom-display").onclick=function(){
+  document.getElementById("prenom-input").value=userPrenom;
+  document.getElementById("modal-prenom").classList.add("show");
+  setTimeout(function(){document.getElementById("prenom-input").focus();},100);
+};
+
+// Sauvegarder les activités au moment de l'enregistrement
+var _origOkActivites=document.getElementById("btn-activites-ok").onclick;
+document.getElementById("btn-activites-ok").addEventListener("click",function(){
+  setTimeout(sauvegarderProfil,100);
+});
+
+/* ══════════════════════════════════════════════
+   IMPORTANT 7 — BOUTON RETOUR sur sous-écrans
+══════════════════════════════════════════════ */
+(function(){
+  var screens=["diagnostic","calculateur","marche"];
+  screens.forEach(function(id){
+    var sc=document.getElementById("screen-"+id);
+    if(!sc)return;
+    var hd=sc.querySelector(".screen-hd");
+    if(!hd)return;
+    var btn=document.createElement("button");
+    btn.style.cssText="display:inline-flex;align-items:center;gap:6px;background:rgba(244,234,208,0.07);border:1px solid rgba(244,234,208,0.12);border-radius:10px;padding:6px 13px;color:rgba(244,234,208,0.6);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;transition:all 0.18s";
+    btn.innerHTML="← Retour";
+    btn.onmouseover=function(){this.style.background="rgba(244,234,208,0.12)";this.style.color="#f4ead0";};
+    btn.onmouseout=function(){this.style.background="rgba(244,234,208,0.07)";this.style.color="rgba(244,234,208,0.6)";};
+    btn.onclick=function(){goTab("accueil");};
+    sc.insertBefore(btn,sc.firstChild);
+  });
+})();
+
+/* ══════════════════════════════════════════════
+   IMPORTANT 8 — BADGE de notification sur nav
+══════════════════════════════════════════════ */
+(function(){
+  var navAssist=document.querySelector("[data-tab='assistant'] .nav-ico");
+  if(navAssist){
+    var badge=document.createElement("span");
+    badge.id="nav-badge";
+    badge.style.cssText="position:absolute;top:6px;right:18%;width:8px;height:8px;background:#e05040;border-radius:50%;box-shadow:0 0 6px rgba(224,80,64,0.6);display:block";
+    document.querySelector("[data-tab='assistant']").style.position="relative";
+    document.querySelector("[data-tab='assistant']").appendChild(badge);
+  }
+})();
+function enleverNavBadge(){var b=document.getElementById("nav-badge");if(b)b.style.display="none";}
+
+/* ══════════════════════════════════════════════
+   IMPORTANT 9 — CONSEIL DU JOUR au démarrage
+══════════════════════════════════════════════ */
+function envoyerConseilDuJour(){
+  if(histo.length>0)return;
+  var prenom=userPrenom||"";
+  var saison=getSaison();
+  var activites=selectedActivites&&selectedActivites.length>0?selectedActivites[0]:"vos cultures";
+  var salut=prenom?"Bonjour "+prenom+" !":"Bonjour !";
+  var msg=salut+" Nous sommes en "+saison+". Quel est le conseil le plus important pour "+activites+" en ce moment au Bénin ? Donne un seul conseil urgent du jour, en 2 phrases maximum.";
+  PROMPT=buildPROMPT();
+  showTyping();setSub("Conseil du jour en cours…");
+  fetch("/api/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,system:PROMPT,messages:[{role:"user",content:msg}]})
+  }).then(function(r){return r.json();}).then(function(d){
+    hideTyping();
+    var rep=(d.content&&d.content[0]&&d.content[0].text)?d.content[0].text:"";
+    if(rep)ajouterBulle("bot","☀️ Conseil du jour\n\n"+rep);
+    setSub("Choisissez un thème ou posez votre question");
+  }).catch(function(){hideTyping();setSub("Choisissez un thème ou posez votre question");});
+}
+
+/* ══════════════════════════════════════════════
+   IMPORTANT 10 — +8 CULTURES dans le calculateur
+══════════════════════════════════════════════ */
+(function(){
+  var culturesSupp=[
+    {nom:"🍠 Igname",    prix:200,  rend:8000},
+    {nom:"🥔 Manioc",   prix:80,   rend:15000},
+    {nom:"🌸 Coton",    prix:450,  rend:1200},
+    {nom:"🍍 Ananas",   prix:150,  rend:20000},
+    {nom:"🫘 Haricot",  prix:400,  rend:600},
+    {nom:"🌼 Sésame",   prix:600,  rend:500},
+    {nom:"🥜 Pois d'angole",prix:350,rend:800},
+    {nom:"🍠 Patate douce",prix:120,rend:12000}
+  ];
+  var container=document.getElementById("calc-cultures");
+  if(!container)return;
+  culturesSupp.forEach(function(c){
+    var btn=document.createElement("button");
+    btn.className="calc-cult-btn";
+    btn.dataset.prix=c.prix;
+    btn.dataset.rend=c.rend;
+    btn.textContent=c.nom;
+    btn.addEventListener("click",function(){
+      document.querySelectorAll(".calc-cult-btn").forEach(function(x){x.classList.remove("active");});
+      btn.classList.add("active");
+      calcCulturePrix=c.prix;calcCultureRend=c.rend;calcCultureNom=c.nom;
+      calculer();
+    });
+    container.appendChild(btn);
+  });
+})();
+
+/* ══════════════════════════════════════════════
+   IMPORTANT 11 — HORODATAGE précis marché + bouton actualiser
+══════════════════════════════════════════════ */
+function afficherPrixAvecHorodatage(){
+  afficherPrix();
+  var now=new Date();
+  var heure=now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  var date=now.toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
+  document.getElementById("marche-date").innerHTML=
+    "Mis à jour le "+date+" à "+heure+" · Bénin &nbsp;<button onclick='afficherPrixAvecHorodatage()' style='background:rgba(109,191,58,0.10);border:1px solid rgba(109,191,58,0.22);border-radius:8px;padding:3px 10px;color:var(--lime2);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-body)'>🔄 Actualiser</button>";
+}
+// Remplacer l'appel initial
+setTimeout(afficherPrixAvecHorodatage,100);
+
+/* ══════════════════════════════════════════════
+   IMPORTANT 12 — CALENDRIER AGRICOLE
+══════════════════════════════════════════════ */
+(function(){
+  var navEl=document.getElementById("nav");
+  if(!navEl)return;
+  // Ajouter l'onglet calendrier dans la nav (on remplace profil visuellement)
+  // On ajoute plutôt un accès via l'accueil
+  var screenCal=document.createElement("div");
+  screenCal.id="screen-calendrier";
+  screenCal.className="screen";
+  var moisNoms=["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+  var moisActuel=new Date().getMonth();
+  var cultures=[
+    {nom:"🌽 Maïs",     semis:[3,4],traite:[5,6],recolte:[7,8,9]},
+    {nom:"🍚 Riz",      semis:[5,6],traite:[7],  recolte:[9,10]},
+    {nom:"🥜 Arachide", semis:[4,5],traite:[6],  recolte:[8,9]},
+    {nom:"🌾 Sorgho",   semis:[5,6],traite:[7],  recolte:[10,11]},
+    {nom:"🍅 Tomate",   semis:[10,11],traite:[11,0],recolte:[1,2]},
+    {nom:"🧅 Oignon",   semis:[10,11],traite:[0,1],recolte:[2,3]}
+  ];
+  function coulMois(c,m){
+    if(c.semis.indexOf(m)>=0)return{bg:"rgba(109,191,58,0.20)",txt:"🌱",label:"Semis"};
+    if(c.traite.indexOf(m)>=0)return{bg:"rgba(74,144,217,0.20)",txt:"💊",label:"Traitement"};
+    if(c.recolte.indexOf(m)>=0)return{bg:"rgba(240,184,64,0.22)",txt:"🌾",label:"Récolte"};
+    return{bg:"transparent",txt:"",label:""};
+  }
+  var rows=cultures.map(function(c){
+    var mois=moisNoms.map(function(mn,i){
+      var info=coulMois(c,i);
+      var border=i===moisActuel?"border:2px solid var(--lime);":"border:1px solid rgba(244,234,208,0.07);";
+      return'<td style="padding:6px 3px;text-align:center;border-radius:6px;background:'+info.bg+';'+border+'font-size:11px;color:rgba(244,234,208,0.75)" title="'+info.label+'">'+info.txt+'</td>';
+    }).join("");
+    return'<tr><td style="padding:8px 10px 8px 0;font-size:13px;font-weight:600;color:var(--ivory);white-space:nowrap">'+c.nom+'</td>'+mois+'</tr>';
+  }).join("");
+  var headMois=moisNoms.map(function(mn,i){
+    var style=i===moisActuel?"color:var(--lime);font-weight:700":"color:rgba(244,234,208,0.40)";
+    return'<th style="padding:6px 3px;font-size:10px;text-align:center;'+style+'">'+mn+'</th>';
+  }).join("");
+  screenCal.innerHTML='<button style="display:inline-flex;align-items:center;gap:6px;background:rgba(244,234,208,0.07);border:1px solid rgba(244,234,208,0.12);border-radius:10px;padding:6px 13px;color:rgba(244,234,208,0.6);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);margin-bottom:10px" onclick="goTab(\'accueil\')">← Retour</button><div class="screen-hd"><h2>📅 Calendrier agricole</h2><p>Saisons au Bénin · mois actuel en vert</p></div><div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:3px"><thead><tr><th style="text-align:left;padding:6px 10px 6px 0;font-size:11px;color:rgba(244,234,208,0.40)">Culture</th>'+headMois+'</tr></thead><tbody>'+rows+'</tbody></table><div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:rgba(244,234,208,0.50)"><span>🌱 Semis</span><span>💊 Traitement</span><span>🌾 Récolte</span></div></div>';
+  var content=document.getElementById("content");
+  if(content)content.appendChild(screenCal);
+  // Ajouter bouton accès rapide dans l'accueil
+  var qbCal=document.createElement("div");
+  qbCal.className="quick-btn";
+  qbCal.id="qb-calendrier";
+  qbCal.innerHTML='<span class="qi">📅</span><div class="ql">Calendrier</div><div class="qd">Semis & récoltes</div>';
+  qbCal.onclick=function(){goTab("calendrier");};
+  // Remplacer la tuile "Mon profil" de l'accueil rapide par le calendrier (s'il reste de la place)
+  var grid=document.querySelector(".quick-grid");
+  if(grid&&grid.children.length<4)grid.appendChild(qbCal);
+})();
+
+/* ══════════════════════════════════════════════
+   IMPORTANT 13 — INDICATEUR RÉSEAU dynamique
+══════════════════════════════════════════════ */
+(function(){
+  var pill=document.getElementById("status-pill");
+  if(!pill)return;
+  function checkNet(){
+    if(!navigator.onLine){
+      pill.style.background="rgba(220,60,50,0.10)";pill.style.borderColor="rgba(220,60,50,0.25)";
+      pill.querySelector(".sdot").style.background="#e05040";pill.querySelector(".sdot").style.boxShadow="0 0 6px #e05040";
+      pill.querySelector("span").textContent="Hors ligne";pill.querySelector("span").style.color="#e08070";
+      return;
+    }
+    pill.style.background="rgba(109,191,58,0.08)";pill.style.borderColor="rgba(109,191,58,0.22)";
+    pill.querySelector(".sdot").style.background="var(--lime)";pill.querySelector(".sdot").style.boxShadow="0 0 6px var(--lime)";
+    pill.querySelector("span").textContent="En ligne";pill.querySelector("span").style.color="var(--lime)";
+  }
+  window.addEventListener("online",checkNet);
+  window.addEventListener("offline",checkNet);
+  setInterval(checkNet,10000);
+})();
+
+/* ══════════════════════════════════════════════
+   BONUS 14 — LANGUES IA (Fon/Yoruba/English)
+══════════════════════════════════════════════ */
+document.querySelectorAll(".lang-pill").forEach(function(p){
+  p.addEventListener("click",function(){
+    document.querySelectorAll(".lang-pill").forEach(function(x){x.classList.remove("active");});
+    p.classList.add("active");
+    userLang=p.dataset.lang||"fr";
+    if(micRecog)micRecog.lang=userLang==="en"?"en-US":"fr-FR";
+    sauvegarderProfil();
+    PROMPT=buildPROMPT();
+  });
+});
+
+/* ══════════════════════════════════════════════
+   BONUS 15 — PRIX INTRANTS par ville dans marché
+══════════════════════════════════════════════ */
+(function(){
+  var INTRANTS=[
+    {cat:"intrants",ico:"🧪",nom:"NPK 15-15-15",lieu:"Cotonou",prix:"18 000",unite:"FCFA/sac 50kg",t:"up",d:"+10%"},
+    {cat:"intrants",ico:"🌿",nom:"Urée 46%",    lieu:"Cotonou",prix:"22 000",unite:"FCFA/sac 50kg",t:"up",d:"+8%"},
+    {cat:"intrants",ico:"💊",nom:"Herbicide glypho",lieu:"Bohicon",prix:"6 500",unite:"FCFA/L",t:"eq",d:"stable"},
+    {cat:"intrants",ico:"🌱",nom:"Semences maïs TZPB",lieu:"Parakou",prix:"3 500",unite:"FCFA/kg",t:"up",d:"+5%"},
+    {cat:"intrants",ico:"🪣",nom:"Pesticide neem conc.",lieu:"Natitingou",prix:"2 800",unite:"FCFA/L",t:"eq",d:"stable"},
+    {cat:"intrants",ico:"🧴",nom:"Fongicide mancozèbe",lieu:"Cotonou",prix:"4 200",unite:"FCFA/kg",t:"down",d:"-3%"}
+  ];
+  // Fusionner avec PRIX existant (éviter doublon)
+  INTRANTS.forEach(function(item){
+    var exists=PRIX.some(function(p){return p.nom===item.nom;});
+    if(!exists)PRIX.push(item);
+  });
+})();
+
+/* ══════════════════════════════════════════════
+   INITIALISATION — charger profil au démarrage
+══════════════════════════════════════════════ */
+chargerProfil();
+
+// Demander le prénom si pas encore renseigné (premier lancement)
+setTimeout(function(){
+  try{
+    var done=localStorage.getItem("ay_ob_done")==="1";
+    var prenomSaved=localStorage.getItem("ay_prenom");
+    if(done&&!prenomSaved){
+      document.getElementById("prenom-input").value="";
+      document.getElementById("modal-prenom").classList.add("show");
+      setTimeout(function(){document.getElementById("prenom-input").focus();},200);
+    }
+  }catch(e){}
+},800);
+
+// Enlever le badge nav quand on clique sur Assistant
+var _origGoTab=goTab;
+goTab=function(tab){
+  _origGoTab(tab);
+  if(tab==="assistant")enleverNavBadge();
+};
+
+// Conseil du jour au démarrage de session
+var _origActiverChat=activerChat;
+activerChat=function(){
+  _origActiverChat();
+  setTimeout(envoyerConseilDuJour,600);
+};
 
 function imprimer(){
   if(histo.length===0)return;
