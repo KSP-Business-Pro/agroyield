@@ -1188,7 +1188,14 @@ header{
   font-family:var(--font-body);transition:all 0.18s;
 }
 .loc-sug:hover{background:rgba(109,191,58,0.12);border-color:rgba(109,191,58,0.25);color:#f4ead0}
-.ob-dot{width:8px;height:8px;border-radius:50%;background:rgba(244,234,208,0.2);transition:all 0.3s}
+/* Bouton arrêt accueil */
+#btn-arret-accueil:hover{
+  background:rgba(220,60,50,0.15) !important;
+  border-color:rgba(220,60,50,0.40) !important;
+  color:rgba(255,160,150,1) !important;
+  transform:translateY(-1px);
+}
+#btn-arret-accueil:active{transform:translateY(0)}
 .ob-dot.active{width:24px;border-radius:4px;background:var(--lime)}
 .calc-cult-btn{padding:10px 14px;border-radius:22px;border:2px solid rgba(244,234,208,0.09);background:rgba(244,234,208,0.05);color:rgba(244,234,208,0.65);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all 0.18s;white-space:nowrap}
 .calc-cult-btn.active{background:rgba(109,191,58,0.14);border-color:rgba(109,191,58,0.32);color:#f4ead0}
@@ -1476,6 +1483,25 @@ header{
         <div class="alerte-item"><div class="alerte-dot high"></div><div class="alerte-txt"><strong>Vaccination volailles</strong>Cette semaine — ne pas attendre pour la Newcastle</div></div>
         <div class="alerte-item"><div class="alerte-dot med"></div><div class="alerte-txt"><strong>Prix du maïs en hausse</strong>+12% dans votre zone cette semaine</div></div>
         <div class="alerte-item"><div class="alerte-dot low"></div><div class="alerte-txt"><strong>Semis de maïs</strong>Période favorable dans 10 jours selon météo</div></div>
+      </div>
+
+      <!-- Bouton Arrêt session -->
+      <div style="margin-bottom:20px">
+        <button id="btn-arret-accueil" onclick="document.getElementById('modal-sortie').classList.add('show')"
+          style="width:100%;padding:15px 20px;
+            background:rgba(220,60,50,0.08);
+            border:2px solid rgba(220,60,50,0.22);
+            border-radius:16px;
+            color:rgba(240,130,120,0.90);
+            font-size:15px;font-weight:700;
+            cursor:pointer;font-family:var(--font-body);
+            display:flex;align-items:center;justify-content:center;gap:10px;
+            transition:all 0.2s;min-height:54px;">
+          <span style="font-size:20px">⏹</span> Arrêter la session
+        </button>
+        <p style="text-align:center;font-size:11px;color:rgba(244,234,208,0.25);margin-top:7px">
+          Efface l'historique et ferme la consultation en cours
+        </p>
       </div>
     </div>
 
@@ -2298,6 +2324,13 @@ function activerChat(){
     mb._connected=true;
     mb.addEventListener("click",function(){micOn?stopMic():startMic();});
   }
+  // Mettre le bouton Arrêt en évidence (session active)
+  var ba=document.getElementById("btn-arret-accueil");
+  if(ba){
+    ba.style.background="rgba(220,60,50,0.14)";
+    ba.style.borderColor="rgba(220,60,50,0.38)";
+    ba.innerHTML='<span style="font-size:20px">⏹</span> Arrêter la session en cours';
+  }
 }
 function ajouterBulle(role,texte){
   // Retirer les anciennes questions de suivi
@@ -2377,6 +2410,15 @@ function confirmerSortie(){
   elCatPanel.classList.remove("show");
   document.querySelectorAll(".feat-btn").forEach(function(b){b.classList.remove("active");});
   elTA.value="";elStatusPill.style.display="";elBtnPrint.classList.remove("show");elBtnExit.classList.remove("show");
+  // Remettre le bouton Arrêt à l'état normal (pas de session)
+  var ba=document.getElementById("btn-arret-accueil");
+  if(ba){
+    ba.style.background="rgba(220,60,50,0.08)";
+    ba.style.borderColor="rgba(220,60,50,0.22)";
+    ba.innerHTML='<span style="font-size:20px">⏹</span> Arrêter la session';
+  }
+  // Masquer le micro principal
+  var mz=document.getElementById("mic-zone");if(mz)mz.style.display="none";
   majEnvoi();goTab("accueil");
 }
 
