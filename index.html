@@ -1148,6 +1148,40 @@ header{
 .btn-payer-test:hover{background:rgba(109,191,58,0.14)}
 .pay-cancel-link{display:block;text-align:center;font-size:11px;color:rgba(244,234,208,0.26);cursor:pointer;transition:color 0.18s}
 .pay-cancel-link:hover{color:rgba(244,234,208,0.52)}
+
+/* ── ACTIVITY CHECKBOXES ── */
+.act-check-item{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 13px;
+  background:rgba(244,234,208,0.04);border:1px solid rgba(244,234,208,0.08);
+  border-radius:11px;cursor:pointer;transition:all 0.18s;
+}
+.act-check-item:hover{background:rgba(109,191,58,0.08);border-color:rgba(109,191,58,0.18)}
+.act-check-item.checked{background:rgba(109,191,58,0.11);border-color:rgba(109,191,58,0.28)}
+.act-check-box{
+  width:20px;height:20px;border-radius:6px;
+  border:2px solid rgba(244,234,208,0.22);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all 0.18s;font-size:12px;
+}
+.act-check-item.checked .act-check-box{
+  background:var(--leaf);border-color:var(--lime);color:#fff;
+}
+.act-check-label{font-size:13px;color:rgba(244,234,208,0.72)}
+.act-check-item.checked .act-check-label{color:#f4ead0;font-weight:600}
+
+/* ── ADMIN UNLOCK FLASH ── */
+@keyframes adminFlash{0%,100%{background:rgba(240,184,64,0.08)}50%{background:rgba(240,184,64,0.18)}}
+.admin-flash{animation:adminFlash 0.4s ease-in-out 3}
+
+/* ── LOC SUGGESTION PILLS ── */
+.loc-sug{
+  padding:6px 12px;border-radius:18px;
+  background:rgba(244,234,208,0.06);border:1px solid rgba(244,234,208,0.12);
+  color:rgba(244,234,208,0.65);font-size:12px;cursor:pointer;
+  font-family:var(--font-body);transition:all 0.18s;
+}
+.loc-sug:hover{background:rgba(109,191,58,0.12);border-color:rgba(109,191,58,0.25);color:#f4ead0}
 </style>
 </head>
 <body>
@@ -1501,14 +1535,23 @@ header{
     <!-- ── PROFIL ── -->
     <div class="screen" id="screen-profil">
       <div class="profil-header">
-        <div class="profil-avatar">👨‍🌾</div>
-        <div class="profil-nom">Mon exploitation</div>
+        <!-- Tap logo 5× to unlock admin panel -->
+        <div class="profil-avatar" id="profil-avatar-tap">👨‍🌾</div>
+        <div class="profil-nom" id="profil-nom-display">Mon exploitation</div>
         <div class="profil-loc" id="profil-loc-header">📍 Bénin · Agriculteur / Éleveur</div>
       </div>
       <div class="setting-group">
         <div class="sg-title">Profil agricole</div>
-        <div class="setting-item"><span class="s-ico">🌾</span><div class="s-txt"><h4>Activités principales</h4><p>Maïs, Volaille, Maraîchage</p></div><span class="s-arr">›</span></div>
-        <div class="setting-item"><span class="s-ico">📍</span><div class="s-txt"><h4>Localisation</h4><p id="profil-loc-txt">Détection en cours…</p></div><span class="s-arr">›</span></div>
+        <div class="setting-item" id="btn-edit-activites" style="cursor:pointer">
+          <span class="s-ico">🌾</span>
+          <div class="s-txt"><h4>Activités principales</h4><p id="profil-activites-txt">Maïs, Volaille, Maraîchage</p></div>
+          <span class="s-arr" style="color:rgba(244,234,208,0.5);font-size:13px">✏️</span>
+        </div>
+        <div class="setting-item" id="btn-edit-loc" style="cursor:pointer">
+          <span class="s-ico">📍</span>
+          <div class="s-txt"><h4>Localisation</h4><p id="profil-loc-txt">Détection en cours…</p></div>
+          <span class="s-arr" style="color:rgba(244,234,208,0.5);font-size:13px">✏️</span>
+        </div>
       </div>
       <div class="setting-group">
         <div class="sg-title">Langue de l'interface</div>
@@ -1524,12 +1567,17 @@ header{
         <div class="setting-item"><span class="s-ico">🔊</span><div class="s-txt"><h4>Lecture vocale</h4><p>Écouter les réponses de l'IA</p></div><div class="toggle on" id="toggle-voice"></div></div>
         <div class="setting-item"><span class="s-ico">🔔</span><div class="s-txt"><h4>Notifications</h4><p>Alertes et rappels agricoles</p></div><div class="toggle on" id="toggle-notif"></div></div>
       </div>
-      <div class="setting-group">
-        <div class="sg-title">💳 Paiement CinetPay</div>
+
+      <!-- ADMIN PANEL — caché, déverrouillé par 5 taps sur l'avatar -->
+      <div class="setting-group" id="admin-panel" style="display:none">
+        <div class="sg-title" style="display:flex;align-items:center;gap:8px">
+          🔐 Admin — Paiement CinetPay
+          <button id="btn-lock-admin" style="margin-left:auto;background:rgba(220,60,50,0.12);border:1px solid rgba(220,60,50,0.25);border-radius:8px;color:rgba(240,140,130,0.85);font-size:11px;padding:3px 10px;cursor:pointer;font-family:var(--font-body)">🔒 Verrouiller</button>
+        </div>
         <div class="pay-config-card">
           <label>Configuration passerelle de paiement</label>
           <div class="pay-config-field">
-            <input type="text" id="cp-apikey" placeholder="Clé API CinetPay"/>
+            <input type="password" id="cp-apikey" placeholder="Clé API CinetPay"/>
             <small>Obtenez votre clé sur <strong>cinetpay.com</strong></small>
           </div>
           <div class="pay-config-field">
@@ -1540,10 +1588,42 @@ header{
               <input type="number" id="cp-prix" placeholder="500" min="100" step="100"/>
               <span>FCFA / consultation</span>
             </div>
-            <small>Tarif par session de consultation</small>
+            <small>Tarif facturé par session</small>
           </div>
-          <button class="btn-save" id="btn-save-pay" style="width:100%;margin-top:4px">Enregistrer</button>
+          <button class="btn-save" id="btn-save-pay" style="width:100%;margin-top:4px">💾 Enregistrer</button>
           <div class="api-status" id="pay-config-status">Mode test actif</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL — Éditer activités -->
+    <div class="modal-ov" id="modal-activites">
+      <div class="modal-bg" id="modal-activites-bg"></div>
+      <div class="modal-box" style="max-width:340px;text-align:left">
+        <span class="modal-emo">🌾</span>
+        <h3 style="margin-bottom:10px">Activités principales</h3>
+        <p style="margin-bottom:14px;font-size:12px;color:rgba(244,234,208,0.45)">Cochez vos cultures et élevages pratiqués</p>
+        <div id="activites-checkboxes" style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-cancel" id="btn-activites-cancel">Annuler</button>
+          <button class="btn-quit" style="background:linear-gradient(135deg,#3d7a20,#2a5514);border-color:rgba(109,191,58,0.3);color:#f4ead0" id="btn-activites-ok">✓ Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL — Éditer localisation -->
+    <div class="modal-ov" id="modal-localisation">
+      <div class="modal-bg" id="modal-loc-bg"></div>
+      <div class="modal-box" style="max-width:340px;text-align:left">
+        <span class="modal-emo">📍</span>
+        <h3 style="margin-bottom:10px">Votre localisation</h3>
+        <p style="margin-bottom:12px;font-size:12px;color:rgba(244,234,208,0.45)">Entrez votre ville ou commune</p>
+        <input id="loc-input" type="text" placeholder="Ex : Parakou, Natitingou…"
+          style="width:100%;background:rgba(244,234,208,0.07);border:2px solid rgba(244,234,208,0.15);border-radius:12px;padding:12px 14px;color:#f4ead0;font-size:14px;font-family:var(--font-body);outline:none;margin-bottom:8px"/>
+        <div id="loc-suggestions" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-cancel" id="btn-loc-cancel">Annuler</button>
+          <button class="btn-quit" style="background:linear-gradient(135deg,#3d7a20,#2a5514);border-color:rgba(109,191,58,0.3);color:#f4ead0" id="btn-loc-ok">✓ Enregistrer</button>
         </div>
       </div>
     </div>
@@ -2192,7 +2272,123 @@ function afficherPrix(){
 }
 afficherPrix();
 
-/* ── PRINT ── */
+/* ── ADMIN PANEL — 5 taps sur l'avatar ── */
+var adminTaps=0,adminTimer=null;
+document.getElementById("profil-avatar-tap").addEventListener("click",function(){
+  adminTaps++;
+  clearTimeout(adminTimer);
+  adminTimer=setTimeout(function(){adminTaps=0;},2000);
+  if(adminTaps>=5){
+    adminTaps=0;
+    var panel=document.getElementById("admin-panel");
+    panel.style.display="block";
+    panel.classList.add("admin-flash");
+    setTimeout(function(){panel.classList.remove("admin-flash");},1200);
+  }
+});
+document.getElementById("btn-lock-admin").addEventListener("click",function(){
+  document.getElementById("admin-panel").style.display="none";
+  adminTaps=0;
+});
+
+/* ── ÉDITER ACTIVITÉS ── */
+var ACTIVITES_LIST=[
+  {ico:"🌽",label:"Maïs"},
+  {ico:"🌾",label:"Sorgho / Mil"},
+  {ico:"🍚",label:"Riz"},
+  {ico:"🥜",label:"Arachide"},
+  {ico:"🍅",label:"Tomate / Maraîchage"},
+  {ico:"🫑",label:"Piment / Gombo"},
+  {ico:"🐔",label:"Aviculture (volaille)"},
+  {ico:"🐄",label:"Élevage bovin"},
+  {ico:"🐐",label:"Élevage caprin / ovin"},
+  {ico:"🐟",label:"Pisciculture"},
+  {ico:"🌴",label:"Palmier à huile"},
+  {ico:"🫘",label:"Soja / Niébé"}
+];
+var selectedActivites=["Maïs","Aviculture (volaille)","Tomate / Maraîchage"];
+
+function buildActivitesCheckboxes(){
+  var box=document.getElementById("activites-checkboxes");
+  box.innerHTML="";
+  ACTIVITES_LIST.forEach(function(a){
+    var isChecked=selectedActivites.indexOf(a.label)>=0;
+    var div=document.createElement("div");
+    div.className="act-check-item"+(isChecked?" checked":"");
+    div.dataset.label=a.label;
+    div.innerHTML='<div class="act-check-box">'+(isChecked?"✓":"")+'</div><span style="font-size:17px">'+a.ico+'</span><span class="act-check-label">'+a.label+'</span>';
+    div.addEventListener("click",function(){
+      div.classList.toggle("checked");
+      var cb=div.querySelector(".act-check-box");
+      cb.textContent=div.classList.contains("checked")?"✓":"";
+    });
+    box.appendChild(div);
+  });
+}
+function updateActivitesDisplay(){
+  var txt=selectedActivites.length>0?selectedActivites.join(", "):"Aucune activité sélectionnée";
+  document.getElementById("profil-activites-txt").textContent=txt;
+  // Mettre à jour aussi le system prompt avec les activités
+  var short=selectedActivites.slice(0,3).join(", ");
+  document.getElementById("profil-loc-header").textContent=
+    document.getElementById("profil-loc-header").textContent.replace(/·.*$/,"· "+short);
+}
+
+document.getElementById("btn-edit-activites").addEventListener("click",function(){
+  buildActivitesCheckboxes();
+  document.getElementById("modal-activites").classList.add("show");
+});
+document.getElementById("modal-activites-bg").addEventListener("click",function(){
+  document.getElementById("modal-activites").classList.remove("show");
+});
+document.getElementById("btn-activites-cancel").addEventListener("click",function(){
+  document.getElementById("modal-activites").classList.remove("show");
+});
+document.getElementById("btn-activites-ok").addEventListener("click",function(){
+  selectedActivites=[];
+  document.querySelectorAll("#activites-checkboxes .act-check-item.checked").forEach(function(el){
+    selectedActivites.push(el.dataset.label);
+  });
+  updateActivitesDisplay();
+  document.getElementById("modal-activites").classList.remove("show");
+});
+
+/* ── ÉDITER LOCALISATION ── */
+var VILLES_BENIN=["Cotonou","Porto-Novo","Parakou","Abomey-Calavi","Bohicon","Natitingou","Abomey","Kandi","Ouidah","Lokossa","Djougou","Savè","Nikki","Malanville","Pobè"];
+function buildLocSuggestions(){
+  var box=document.getElementById("loc-suggestions");
+  box.innerHTML="";
+  VILLES_BENIN.forEach(function(v){
+    var btn=document.createElement("button");btn.className="loc-sug";btn.textContent=v;
+    btn.addEventListener("click",function(){document.getElementById("loc-input").value=v;});
+    box.appendChild(btn);
+  });
+}
+document.getElementById("btn-edit-loc").addEventListener("click",function(){
+  buildLocSuggestions();
+  var current=document.getElementById("profil-loc-txt").textContent.replace(", Bénin","").replace("Détection en cours…","");
+  document.getElementById("loc-input").value=current;
+  document.getElementById("modal-localisation").classList.add("show");
+  setTimeout(function(){document.getElementById("loc-input").focus();},100);
+});
+document.getElementById("modal-loc-bg").addEventListener("click",function(){
+  document.getElementById("modal-localisation").classList.remove("show");
+});
+document.getElementById("btn-loc-cancel").addEventListener("click",function(){
+  document.getElementById("modal-localisation").classList.remove("show");
+});
+document.getElementById("btn-loc-ok").addEventListener("click",function(){
+  var val=document.getElementById("loc-input").value.trim();
+  if(!val)return;
+  var full=val+(val.toLowerCase().indexOf("bénin")>=0||val.toLowerCase().indexOf("benin")>=0?"":", Bénin");
+  document.getElementById("profil-loc-txt").textContent=full;
+  document.getElementById("profil-loc-header").textContent="📍 "+val+" · Agriculteur / Éleveur";
+  document.getElementById("accueil-loc").textContent=val+", Bénin";
+  document.getElementById("modal-localisation").classList.remove("show");
+});
+document.getElementById("loc-input").addEventListener("keydown",function(e){
+  if(e.key==="Enter"){document.getElementById("btn-loc-ok").click();}
+});
 function imprimer(){
   if(histo.length===0)return;
   var now=new Date();
