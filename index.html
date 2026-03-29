@@ -1398,7 +1398,7 @@ header{
       <div class="welcome-msg">
         <span class="ico">🌱</span>
         <h2>Bonjour, <em>Fermier !</em></h2>
-        <p>📍 Bénin · Votre assistant IA est prêt</p>
+        <p>📍 <span id="accueil-loc">Bénin</span> · Votre assistant IA est prêt</p>
       </div>
       <div class="meteo-card" id="meteo-card">
         <div class="meteo-ico" id="meteo-ico">📍</div>
@@ -1503,12 +1503,12 @@ header{
       <div class="profil-header">
         <div class="profil-avatar">👨‍🌾</div>
         <div class="profil-nom">Mon exploitation</div>
-        <div class="profil-loc">📍 Bénin · Agriculteur / Éleveur</div>
+        <div class="profil-loc" id="profil-loc-header">📍 Bénin · Agriculteur / Éleveur</div>
       </div>
       <div class="setting-group">
         <div class="sg-title">Profil agricole</div>
         <div class="setting-item"><span class="s-ico">🌾</span><div class="s-txt"><h4>Activités principales</h4><p>Maïs, Volaille, Maraîchage</p></div><span class="s-arr">›</span></div>
-        <div class="setting-item"><span class="s-ico">📍</span><div class="s-txt"><h4>Localisation</h4><p>Cotonou, Bénin</p></div><span class="s-arr">›</span></div>
+        <div class="setting-item"><span class="s-ico">📍</span><div class="s-txt"><h4>Localisation</h4><p id="profil-loc-txt">Détection en cours…</p></div><span class="s-arr">›</span></div>
       </div>
       <div class="setting-group">
         <div class="sg-title">Langue de l'interface</div>
@@ -1807,6 +1807,15 @@ function afficherMeteo(temp,hum,vent,pluieDemain,code,ville,approx){
   var al=document.getElementById("meteo-alerte");al.textContent=conseil;al.style.display="inline-block";
   var ad=document.getElementById("alerte-meteo-dyn");
   if(ad){ad.querySelector("strong").textContent="Météo · "+ville;ad.querySelector(".alerte-txt-body").textContent=conseil;}
+  // ── Synchroniser la localisation dans toute l'interface ──
+  var villeCourte = ville.split(",")[0].trim(); // ex: "Parakou" depuis "Parakou, Borgou"
+  var locText = ville + ", Bénin";
+  var elLocTxt = document.getElementById("profil-loc-txt");
+  var elLocHdr = document.getElementById("profil-loc-header");
+  var elAccueilLoc = document.getElementById("accueil-loc");
+  if(elLocTxt) elLocTxt.textContent = locText;
+  if(elLocHdr) elLocHdr.textContent = "📍 " + ville + " · Agriculteur / Éleveur";
+  if(elAccueilLoc) elAccueilLoc.textContent = villeCourte + ", Bénin";
   var card=document.getElementById("meteo-card");
   if(code>=80||pluieDemain>5){card.style.background="linear-gradient(135deg,rgba(60,80,200,.14),rgba(30,50,120,.18))";card.style.borderColor="rgba(80,110,220,.28)";}
   else if(code<=1){card.style.background="linear-gradient(135deg,rgba(240,184,64,.12),rgba(60,100,30,.16))";card.style.borderColor="rgba(240,184,64,.24)";}
