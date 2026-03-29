@@ -2154,7 +2154,7 @@ document.querySelectorAll(".nav-btn").forEach(function(b){b.addEventListener("cl
 document.getElementById("qb-assistant").onclick=function(){goTab("assistant");};
 document.getElementById("qb-diagnostic").onclick=function(){goTab("diagnostic");};
 document.getElementById("qb-marche").onclick=function(){goTab("marche");};
-document.getElementById("qb-profil").onclick=function(){goTab("profil");};
+document.getElementById("qb-calculateur").onclick=function(){goTab("calculateur");};
 
 /* ── SUGGESTIONS ── */
 var boite=document.getElementById("suggestions");
@@ -2647,8 +2647,6 @@ function demanderConseilIA(){
   goTab("assistant");
   lancer("J'ai "+surface+" ha de "+calcCultureNom+". Mes intrants coûtent "+intrants+". Mon revenu estimé est "+revenu+" FCFA et mon bénéfice "+benefice+" FCFA. Comment améliorer ma rentabilité ?");
 }
-document.getElementById("qb-calculateur").onclick=function(){goTab("calculateur");};
-
 /* ── ONBOARDING (amélioration 5) ── */
 var OB_STEPS=[
   {ico:"🎤",titre:"Parlez à votre conseiller",texte:"Appuyez sur le micro et posez votre question à voix haute. Pas besoin d'écrire !",couleur:"rgba(109,191,58,0.15)"},
@@ -2689,8 +2687,7 @@ function lancerOnboarding(){
 var _launchAppOrig=launchApp;
 launchApp=function(){_launchAppOrig();setTimeout(lancerOnboarding,600);};
 
-/* ── NAVIGATION : ajouter "calculateur" ── */
-document.getElementById("qb-calculateur").onclick=function(){goTab("calculateur");};
+/* ── NAVIGATION : ajouter "calculateur" déjà câblé ci-dessus ── */
   if(histo.length===0)return;
   var now=new Date();
   var ds=now.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
