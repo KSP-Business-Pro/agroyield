@@ -1708,24 +1708,33 @@ header{
         <div style="margin-bottom:12px">
           <label style="font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px">📐 Surface cultivée</label>
           <div style="display:flex;align-items:center;gap:10px">
-            <input type="range" id="calc-surface" min="0.1" max="5" step="0.1" value="0.5" style="flex:1" oninput="calculer()"/>
-            <span id="calc-surface-val" style="min-width:60px;text-align:right;font-size:15px;font-weight:700;color:var(--ivory)">0.5 ha</span>
+            <input type="range" id="calc-surface" min="0.5" max="200" step="0.5" value="1" style="flex:1" oninput="calculer()"/>
+            <span id="calc-surface-val" style="min-width:70px;text-align:right;font-size:15px;font-weight:700;color:var(--ivory)">1 ha</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(244,234,208,0.25);margin-top:3px;padding:0 2px">
+            <span>0.5 ha</span><span>50 ha</span><span>100 ha</span><span>200 ha</span>
           </div>
         </div>
 
         <div style="margin-bottom:12px">
           <label style="font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px">🧪 Coût des intrants</label>
           <div style="display:flex;align-items:center;gap:10px">
-            <input type="range" id="calc-intrants" min="0" max="150000" step="5000" value="30000" style="flex:1" oninput="calculer()"/>
-            <span id="calc-intrants-val" style="min-width:80px;text-align:right;font-size:13px;font-weight:700;color:var(--ivory)">30 000 F</span>
+            <input type="range" id="calc-intrants" min="0" max="50000000" step="100000" value="50000" style="flex:1" oninput="calculer()"/>
+            <span id="calc-intrants-val" style="min-width:100px;text-align:right;font-size:13px;font-weight:700;color:var(--ivory)">50 000 F</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(244,234,208,0.25);margin-top:3px;padding:0 2px">
+            <span>0</span><span>5M</span><span>25M</span><span>50M FCFA</span>
           </div>
         </div>
 
         <div style="margin-bottom:4px">
           <label style="font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px">👷 Coût main d'œuvre</label>
           <div style="display:flex;align-items:center;gap:10px">
-            <input type="range" id="calc-main" min="0" max="100000" step="5000" value="20000" style="flex:1" oninput="calculer()"/>
-            <span id="calc-main-val" style="min-width:80px;text-align:right;font-size:13px;font-weight:700;color:var(--ivory)">20 000 F</span>
+            <input type="range" id="calc-main" min="0" max="30000000" step="100000" value="30000" style="flex:1" oninput="calculer()"/>
+            <span id="calc-main-val" style="min-width:100px;text-align:right;font-size:13px;font-weight:700;color:var(--ivory)">30 000 F</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(244,234,208,0.25);margin-top:3px;padding:0 2px">
+            <span>0</span><span>5M</span><span>15M</span><span>30M FCFA</span>
           </div>
         </div>
       </div>
@@ -2650,14 +2659,26 @@ document.querySelectorAll(".calc-cult-btn").forEach(function(b){
   });
 });
 
-function fmt(n){return Math.round(n).toLocaleString("fr-FR");}
+function fmt(n){
+  n=Math.round(n);
+  if(n>=1000000) return (n/1000000).toLocaleString("fr-FR",{maximumFractionDigits:2})+" M";
+  if(n>=1000) return n.toLocaleString("fr-FR");
+  return String(n);
+}
+function fmtLabel(n){
+  n=Math.round(n);
+  if(n>=1000000) return (n/1000000).toLocaleString("fr-FR",{maximumFractionDigits:2})+" M F";
+  return n.toLocaleString("fr-FR")+" F";
+}
 function calculer(){
-  var surface=parseFloat(document.getElementById("calc-surface").value)||0.5;
+  var surface=parseFloat(document.getElementById("calc-surface").value)||1;
   var intrants=parseInt(document.getElementById("calc-intrants").value)||0;
   var main=parseInt(document.getElementById("calc-main").value)||0;
-  document.getElementById("calc-surface-val").textContent=surface.toFixed(1)+" ha";
-  document.getElementById("calc-intrants-val").textContent=fmt(intrants)+" F";
-  document.getElementById("calc-main-val").textContent=fmt(main)+" F";
+  // Affichage surface : ex "12.5 ha" ou "100 ha"
+  document.getElementById("calc-surface-val").textContent=
+    (surface%1===0?surface:surface.toFixed(1))+" ha";
+  document.getElementById("calc-intrants-val").textContent=fmtLabel(intrants);
+  document.getElementById("calc-main-val").textContent=fmtLabel(main);
   var rendement=calcCultureRend*surface;
   var revenu=rendement*calcCulturePrix;
   var coutTotal=intrants+main;
@@ -2670,13 +2691,13 @@ function calculer(){
   var ratio=coutTotal>0?(benefice/coutTotal*100):0;
   if(benefice>0){
     v.style.background="rgba(109,191,58,0.08)";v.style.borderColor="rgba(109,191,58,0.18)";
-    v.textContent="✅ Bonne affaire ! Pour chaque franc investi, vous gagnez "+fmt(ratio)+" F. Rendement estimé : "+fmt(rendement)+" kg sur "+surface+" ha.";
-  } else if(benefice>-20000){
+    v.textContent="✅ Bonne affaire ! Pour 100 F investis, vous gagnez "+Math.round(ratio)+" F. Rendement estimé : "+fmt(rendement)+" kg sur "+surface+" ha.";
+  } else if(benefice>-100000){
     v.style.background="rgba(240,184,64,0.08)";v.style.borderColor="rgba(240,184,64,0.18)";
     v.textContent="⚠️ Faible bénéfice. Essayez de réduire les intrants ou d'augmenter la surface. Rendement estimé : "+fmt(rendement)+" kg.";
   } else {
     v.style.background="rgba(224,80,64,0.08)";v.style.borderColor="rgba(224,80,64,0.18)";
-    v.textContent="❌ Perte prévue. Réduisez vos coûts ou augmentez la surface. Demandez conseil à l'IA.";
+    v.textContent="❌ Perte prévue de "+fmt(Math.abs(benefice))+" F. Réduisez vos coûts ou demandez conseil à l'IA.";
   }
 }
 calculer();
