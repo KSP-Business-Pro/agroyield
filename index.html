@@ -1596,26 +1596,45 @@ header{
       </div>
     </div>
 
-    <!-- MODAL — Éditer activités -->
-    <div class="modal-ov" id="modal-activites" style="align-items:flex-end;z-index:500">
-      <div class="modal-bg" id="modal-activites-bg"></div>
-      <div style="position:relative;z-index:1;width:100%;max-width:640px;background:linear-gradient(160deg,#1e2e14,#141e0c);border:1px solid rgba(244,234,208,0.11);border-radius:24px 24px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,0.7);display:flex;flex-direction:column;max-height:82vh;">
-        <!-- En-tête fixe -->
-        <div style="padding:18px 20px 12px;border-bottom:1px solid rgba(244,234,208,0.08);flex-shrink:0">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:3px">
-            <span style="font-size:24px">🌾</span>
-            <h3 style="font-family:var(--font-display);font-size:18px;font-weight:700;color:#f4ead0">Activités principales</h3>
+    <!-- MODAL — Éditer activités (plein écran) -->
+    <div id="modal-activites" style="display:none;position:fixed;inset:0;z-index:600;flex-direction:column;background:linear-gradient(160deg,#0c1a08,#111a0a);">
+
+      <!-- ── VUE SÉLECTION ── -->
+      <div id="activites-view-select" style="display:flex;flex-direction:column;height:100%">
+        <!-- Header -->
+        <div style="flex-shrink:0;padding:14px 16px 11px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(244,234,208,0.08);background:rgba(0,0,0,0.25)">
+          <button id="btn-activites-cancel" style="width:38px;height:38px;border-radius:50%;background:rgba(244,234,208,0.07);border:1px solid rgba(244,234,208,0.12);color:rgba(244,234,208,0.7);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">←</button>
+          <div>
+            <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:#f4ead0;line-height:1">Activités principales</div>
+            <div style="font-size:11px;color:rgba(244,234,208,0.40);margin-top:2px">Cochez vos cultures et élevages</div>
           </div>
-          <p style="font-size:12px;color:rgba(244,234,208,0.42);margin-left:34px">Cochez vos cultures et élevages pratiqués</p>
+          <div id="activites-compteur" style="margin-left:auto;padding:4px 11px;background:rgba(109,191,58,0.12);border:1px solid rgba(109,191,58,0.22);border-radius:20px;font-size:12px;font-weight:700;color:var(--lime2)">0 choisi</div>
         </div>
-        <!-- Zone scrollable -->
-        <div id="activites-checkboxes" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch"></div>
-        <!-- Boutons fixes en bas — au-dessus de la nav -->
-        <div style="padding:12px 16px 16px;border-top:1px solid rgba(244,234,208,0.08);display:flex;gap:9px;flex-shrink:0">
-          <button class="btn-cancel" id="btn-activites-cancel" style="flex:1;padding:14px;border-radius:13px;font-size:14px;min-height:50px">Annuler</button>
-          <button id="btn-activites-ok" style="flex:2;padding:14px;background:linear-gradient(135deg,#3d7a20,#2a5514);border:none;border-radius:13px;color:#f4ead0;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-body);box-shadow:0 4px 16px rgba(61,122,32,0.4);min-height:50px">✓ Enregistrer</button>
+
+        <!-- Liste scrollable -->
+        <div id="activites-checkboxes" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:9px;-webkit-overflow-scrolling:touch"></div>
+
+        <!-- Bouton Enregistrer — toujours visible -->
+        <div style="flex-shrink:0;padding:14px 16px;border-top:1px solid rgba(244,234,208,0.08);background:rgba(0,0,0,0.3)">
+          <button id="btn-activites-ok" style="width:100%;padding:16px;background:linear-gradient(135deg,#4a8c28,#2a5514);border:none;border-radius:16px;color:#f4ead0;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font-body);box-shadow:0 6px 22px rgba(61,122,32,0.45);display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px">
+            <span style="font-size:20px">✓</span> Enregistrer mes activités
+          </button>
         </div>
       </div>
+
+      <!-- ── VUE CONFIRMATION ── -->
+      <div id="activites-view-confirm" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:32px 24px;text-align:center">
+        <div style="font-size:64px;margin-bottom:20px;animation:float 3s ease-in-out infinite">✅</div>
+        <div style="font-family:var(--font-display);font-size:26px;font-weight:700;color:#f4ead0;margin-bottom:8px">Activités enregistrées !</div>
+        <div id="confirm-activites-txt" style="font-size:14px;color:rgba(244,234,208,0.55);line-height:1.7;margin-bottom:32px;max-width:300px"></div>
+        <button id="btn-activites-retour" style="width:100%;max-width:320px;padding:16px;background:linear-gradient(135deg,#4a8c28,#2a5514);border:none;border-radius:16px;color:#f4ead0;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font-body);box-shadow:0 6px 22px rgba(61,122,32,0.45);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px">
+          ← Retour au profil
+        </button>
+        <button id="btn-activites-accueil" style="width:100%;max-width:320px;padding:14px;background:rgba(244,234,208,0.06);border:1px solid rgba(244,234,208,0.14);border-radius:16px;color:rgba(244,234,208,0.65);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">
+          🏠 Aller à l'accueil
+        </button>
+      </div>
+
     </div>
 
     <!-- MODAL — Éditer localisation -->
@@ -2323,41 +2342,67 @@ function buildActivitesCheckboxes(){
     var div=document.createElement("div");
     div.className="act-check-item"+(isChecked?" checked":"");
     div.dataset.label=a.label;
-    div.innerHTML='<div class="act-check-box">'+(isChecked?"✓":"")+'</div><span style="font-size:17px">'+a.ico+'</span><span class="act-check-label">'+a.label+'</span>';
+    div.innerHTML='<div class="act-check-box">'+(isChecked?"✓":"")+'</div><span style="font-size:20px">'+a.ico+'</span><span class="act-check-label">'+a.label+'</span>';
     div.addEventListener("click",function(){
       div.classList.toggle("checked");
-      var cb=div.querySelector(".act-check-box");
-      cb.textContent=div.classList.contains("checked")?"✓":"";
+      div.querySelector(".act-check-box").textContent=div.classList.contains("checked")?"✓":"";
+      majCompteur();
     });
     box.appendChild(div);
   });
+  majCompteur();
+}
+function majCompteur(){
+  var n=document.querySelectorAll("#activites-checkboxes .act-check-item.checked").length;
+  var el=document.getElementById("activites-compteur");
+  if(el)el.textContent=n+" choisi"+(n>1?"s":"");
 }
 function updateActivitesDisplay(){
   var txt=selectedActivites.length>0?selectedActivites.join(", "):"Aucune activité sélectionnée";
   document.getElementById("profil-activites-txt").textContent=txt;
-  // Mettre à jour aussi le system prompt avec les activités
-  var short=selectedActivites.slice(0,3).join(", ");
-  document.getElementById("profil-loc-header").textContent=
-    document.getElementById("profil-loc-header").textContent.replace(/·.*$/,"· "+short);
 }
 
-document.getElementById("btn-edit-activites").addEventListener("click",function(){
+function ouvrirModalActivites(){
+  // Réinitialiser sur la vue sélection
+  document.getElementById("activites-view-select").style.display="flex";
+  document.getElementById("activites-view-confirm").style.display="none";
   buildActivitesCheckboxes();
-  document.getElementById("modal-activites").classList.add("show");
-});
-document.getElementById("modal-activites-bg").addEventListener("click",function(){
-  document.getElementById("modal-activites").classList.remove("show");
-});
-document.getElementById("btn-activites-cancel").addEventListener("click",function(){
-  document.getElementById("modal-activites").classList.remove("show");
-});
+  document.getElementById("modal-activites").style.display="flex";
+}
+function fermerModalActivites(){
+  document.getElementById("modal-activites").style.display="none";
+}
+
+document.getElementById("btn-edit-activites").addEventListener("click", ouvrirModalActivites);
+
+document.getElementById("btn-activites-cancel").addEventListener("click", fermerModalActivites);
+
 document.getElementById("btn-activites-ok").addEventListener("click",function(){
+  // Collecter les sélections
   selectedActivites=[];
   document.querySelectorAll("#activites-checkboxes .act-check-item.checked").forEach(function(el){
     selectedActivites.push(el.dataset.label);
   });
   updateActivitesDisplay();
-  document.getElementById("modal-activites").classList.remove("show");
+
+  // Passer à la vue confirmation
+  document.getElementById("activites-view-select").style.display="none";
+  var confirmView=document.getElementById("activites-view-confirm");
+  confirmView.style.display="flex";
+  var txt=selectedActivites.length>0
+    ? "Vos activités ont été mises à jour :\n"+selectedActivites.map(function(a){return"• "+a;}).join("\n")
+    : "Aucune activité sélectionnée.";
+  document.getElementById("confirm-activites-txt").textContent=txt;
+  document.getElementById("confirm-activites-txt").style.whiteSpace="pre-line";
+});
+
+document.getElementById("btn-activites-retour").addEventListener("click",function(){
+  fermerModalActivites();
+  goTab("profil");
+});
+document.getElementById("btn-activites-accueil").addEventListener("click",function(){
+  fermerModalActivites();
+  goTab("accueil");
 });
 
 /* ── ÉDITER LOCALISATION ── */
