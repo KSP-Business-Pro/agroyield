@@ -1438,6 +1438,11 @@ header{
     <div class="hdr-r">
       <div class="status-pill" id="status-pill"><div class="sdot"></div><span>En ligne</span></div>
       <div class="pay-badge" id="pay-badge">💳 Payé</div>
+      <!-- Chronomètre 30 min -->
+      <div id="timer-pill" style="display:none;align-items:center;gap:5px;border-radius:30px;padding:5px 12px;font-size:12px;font-weight:700;border:1px solid rgba(109,191,58,0.30);background:rgba(109,191,58,0.10);color:var(--lime2);transition:all 0.5s">
+        <span id="timer-ico" style="font-size:13px">⏱️</span>
+        <span id="timer-display">30:00</span>
+      </div>
       <button class="btn-hdr btn-print" id="btn-print">🖨️ Imprimer</button>
       <button class="btn-hdr btn-exit" id="btn-exit">⏹ Fin</button>
     </div>
@@ -1822,15 +1827,15 @@ header{
         <p>Consultation avec votre assistant IA agricole</p>
       </div>
       <div class="pay-price-band">
-        <div><span class="montant" id="pay-montant-display">500</span><span class="devise">FCFA</span></div>
-        <div class="desc">par consultation · accès illimité à la session</div>
+        <div><span class="montant" id="pay-montant-display">2 500</span><span class="devise">FCFA</span></div>
+        <div class="desc">par consultation · 30 minutes chrono</div>
       </div>
       <div class="pay-body">
         <div class="pay-inclus">
-          <div class="pay-inclus-item"><span>✅</span><span>Réponses IA illimitées</span></div>
+          <div class="pay-inclus-item"><span>⏱️</span><span>30 minutes de consultation chronomètrées</span></div>
+          <div class="pay-inclus-item"><span>✅</span><span>Réponses IA illimitées pendant la session</span></div>
           <div class="pay-inclus-item"><span>✅</span><span>Diagnostic photo plantes &amp; animaux</span></div>
-          <div class="pay-inclus-item"><span>✅</span><span>Rapport imprimable</span></div>
-          <div class="pay-inclus-item"><span>✅</span><span>Conseils adaptés à votre région</span></div>
+          <div class="pay-inclus-item"><span>✅</span><span>Rapport imprimable à la fin</span></div>
         </div>
         <div class="pay-methods">
           <div class="pay-method"><span>📱</span>MTN MoMo</div>
@@ -1857,6 +1862,24 @@ header{
       </div>
     </div>
   </div>
+  <!-- MODAL SESSION EXPIRÉE -->
+  <div class="modal-ov" id="modal-expiration" style="z-index:600">
+    <div class="modal-bg"></div>
+    <div class="modal-box" style="text-align:center">
+      <span class="modal-emo">⏰</span>
+      <h3>Consultation terminée</h3>
+      <p>Vos 30 minutes sont écoulées. Nous espérons que nos conseils vous ont été utiles !</p>
+      <div style="background:rgba(109,191,58,0.08);border:1px solid rgba(109,191,58,0.18);border-radius:12px;padding:12px;margin:14px 0;font-size:13px;color:rgba(244,234,208,0.75)">
+        💡 Vous pouvez imprimer votre rapport avant de fermer.
+      </div>
+      <div class="modal-acts" style="flex-direction:column;gap:8px">
+        <button id="btn-exp-imprimer" style="width:100%;padding:12px;background:rgba(240,184,64,0.12);border:1px solid rgba(240,184,64,0.25);border-radius:12px;color:var(--sun);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body)">🖨️ Imprimer le rapport</button>
+        <button id="btn-exp-nouvelle" style="width:100%;padding:12px;background:linear-gradient(135deg,#3d7a20,#2a5514);border:none;border-radius:12px;color:#f4ead0;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);box-shadow:0 4px 16px rgba(61,122,32,0.35)">🔄 Nouvelle consultation (2 500 FCFA)</button>
+        <button id="btn-exp-quitter" class="btn-cancel" style="width:100%">Fermer</button>
+      </div>
+    </div>
+  </div>
+
 </div><!-- #app -->
 
 <script>
@@ -2023,7 +2046,7 @@ var PRIX = [
 var histo=[],enCharge=false,consultOK=false,catOuv=null,voiceOn=true;
 var diagType="plante",diagB64=null,diagTxt="",micRecog=null,micOn=false;
 var synth=window.speechSynthesis;
-var CINETPAY_KEY="",CINETPAY_SITEID="",PRIX_CONSULTATION=500;
+var CINETPAY_KEY="",CINETPAY_SITEID="",PRIX_CONSULTATION=2500;
 var paiementOK=false,pendingTexte="";
 
 var elHExp=document.getElementById("hero-exp"),elHCmp=document.getElementById("hero-cmp"),
@@ -3059,7 +3082,7 @@ setTimeout(afficherPrixAvecHorodatage,100);
   }
 
   // Ajouter tuile dans l'accès rapide de l'accueil (remplace Mon profil)
-  var qbProfil=document.getElementById("qb-profil");
+  var qbProfil=document.getElementById("qb-calculateur");
   if(qbProfil){
     // Transformer la tuile profil en tuile calendrier
     qbProfil.id="qb-calendrier";
@@ -3136,8 +3159,171 @@ document.querySelectorAll(".lang-pill").forEach(function(p){
 })();
 
 /* ══════════════════════════════════════════════
-   INITIALISATION — charger profil au démarrage
+   CHRONOMÈTRE 30 MINUTES (points 2, 3, 4)
 ══════════════════════════════════════════════ */
+var DUREE_SESSION = 30 * 60; // 30 minutes en secondes
+var timerSecondes = DUREE_SESSION;
+var timerInterval = null;
+var timerPill = document.getElementById("timer-pill");
+var timerDisplay = document.getElementById("timer-display");
+var timerIco = document.getElementById("timer-ico");
+
+function formatTemps(s){
+  var m = Math.floor(s / 60);
+  var sec = s % 60;
+  return (m < 10 ? "0" : "") + m + ":" + (sec < 10 ? "0" : "") + sec;
+}
+
+function majCouleurTimer(s){
+  if(s > 10 * 60){
+    // > 10 min : vert
+    timerPill.style.background = "rgba(109,191,58,0.10)";
+    timerPill.style.borderColor = "rgba(109,191,58,0.30)";
+    timerPill.style.color = "var(--lime2)";
+    timerIco.textContent = "⏱️";
+  } else if(s > 5 * 60){
+    // 5-10 min : orange
+    timerPill.style.background = "rgba(240,184,64,0.12)";
+    timerPill.style.borderColor = "rgba(240,184,64,0.35)";
+    timerPill.style.color = "var(--sun)";
+    timerIco.textContent = "⏳";
+  } else if(s > 60){
+    // 1-5 min : rouge pulsant
+    timerPill.style.background = "rgba(220,60,50,0.14)";
+    timerPill.style.borderColor = "rgba(220,60,50,0.40)";
+    timerPill.style.color = "#e08070";
+    timerIco.textContent = "🔴";
+  } else {
+    // < 1 min : rouge vif clignotant
+    timerPill.style.background = "rgba(220,60,50,0.22)";
+    timerPill.style.borderColor = "rgba(220,60,50,0.60)";
+    timerPill.style.color = "#ffb0a0";
+    timerIco.textContent = "🚨";
+  }
+}
+
+function alerteMinutes(s){
+  // Messages d'alerte à des seuils précis
+  var alertes = {
+    600: "⏳ Il vous reste 10 minutes de consultation.",
+    300: "⚠️ Il vous reste 5 minutes. Posez vos dernières questions !",
+    120: "🔴 Il vous reste 2 minutes. Préparez-vous à terminer.",
+    60:  "🚨 Dernière minute ! La session se termine dans 60 secondes."
+  };
+  if(alertes[s]){
+    // Afficher dans le chat si actif
+    if(consultOK){
+      var row = document.createElement("div");
+      row.className = "msg-row bot";
+      row.style.opacity = "0.85";
+      var b = document.createElement("div");
+      b.className = "bub bot";
+      b.style.cssText = "background:rgba(240,184,64,0.09);border-color:rgba(240,184,64,0.22);font-size:13px;color:rgba(244,234,208,0.80)";
+      b.textContent = alertes[s];
+      row.appendChild(b);
+      elChat.appendChild(row);
+      row.scrollIntoView({behavior:"smooth"});
+    }
+    // Vibration sur mobile si supportée
+    if(navigator.vibrate) navigator.vibrate([100,50,100]);
+  }
+}
+
+function expirerSession(){
+  clearInterval(timerInterval);
+  timerInterval = null;
+  timerDisplay.textContent = "00:00";
+  timerIco.textContent = "🚨";
+  // Bloquer l'input
+  if(elTA){ elTA.disabled = true; elTA.placeholder = "Session terminée"; }
+  if(elSend) elSend.disabled = true;
+  var mb = document.getElementById("mic-big-btn");
+  if(mb) mb.disabled = true;
+  // Afficher la modal d'expiration
+  document.getElementById("modal-expiration").classList.add("show");
+  // Arrêter la synthèse vocale
+  if(synth) synth.cancel();
+}
+
+function demarrerTimer(){
+  if(timerInterval) return; // déjà démarré
+  timerSecondes = DUREE_SESSION;
+  timerDisplay.textContent = formatTemps(timerSecondes);
+  timerPill.style.display = "flex";
+  majCouleurTimer(timerSecondes);
+
+  timerInterval = setInterval(function(){
+    timerSecondes--;
+    timerDisplay.textContent = formatTemps(timerSecondes);
+    majCouleurTimer(timerSecondes);
+    alerteMinutes(timerSecondes);
+    // Animation légère à chaque seconde < 60s
+    if(timerSecondes < 60){
+      timerPill.style.transform = "scale(1.04)";
+      setTimeout(function(){timerPill.style.transform = "scale(1)";}, 150);
+    }
+    if(timerSecondes <= 0) expirerSession();
+  }, 1000);
+}
+
+function arreterTimer(){
+  clearInterval(timerInterval);
+  timerInterval = null;
+  timerPill.style.display = "none";
+  timerSecondes = DUREE_SESSION;
+  timerDisplay.textContent = formatTemps(timerSecondes);
+}
+
+// Boutons de la modal d'expiration
+document.getElementById("btn-exp-imprimer").addEventListener("click", function(){
+  document.getElementById("modal-expiration").classList.remove("show");
+  imprimer();
+});
+document.getElementById("btn-exp-nouvelle").addEventListener("click", function(){
+  document.getElementById("modal-expiration").classList.remove("show");
+  // Réactiver l'input
+  if(elTA){ elTA.disabled = false; elTA.placeholder = "Tapez ou parlez…"; }
+  if(elSend) elSend.disabled = false;
+  var mb = document.getElementById("mic-big-btn"); if(mb) mb.disabled = false;
+  confirmerSortie();
+  // Afficher la modal de paiement pour une nouvelle session
+  setTimeout(function(){ afficherModalPaiement(); }, 600);
+});
+document.getElementById("btn-exp-quitter").addEventListener("click", function(){
+  document.getElementById("modal-expiration").classList.remove("show");
+  if(elTA){ elTA.disabled = false; elTA.placeholder = "Tapez ou parlez…"; }
+  if(elSend) elSend.disabled = false;
+  confirmerSortie();
+});
+
+// Démarrer le timer quand le paiement est validé + session activée
+var _origOnPaiementSucces = onPaiementSucces;
+onPaiementSucces = function(){
+  _origOnPaiementSucces();
+};
+
+// Hook sur activerChat pour démarrer le timer
+var _timerActiverChat = activerChat;
+activerChat = function(){
+  _timerActiverChat();
+  demarrerTimer();
+};
+
+// Arrêter le timer quand la session se termine manuellement
+var _timerConfirmerSortie = confirmerSortie;
+confirmerSortie = function(){
+  arreterTimer();
+  if(elTA){ elTA.disabled = false; elTA.placeholder = "Tapez ou parlez…"; }
+  if(elSend) elSend.disabled = false;
+  _timerConfirmerSortie();
+};
+
+// Affichage du prix dans la modal
+function afficherModalPaiement(){
+  document.getElementById("pay-montant-display").textContent="2 500";
+  document.getElementById("btn-payer-maintenant").style.display=(CINETPAY_KEY&&CINETPAY_SITEID)?"block":"none";
+  document.getElementById("modal-paiement").classList.add("show");
+}
 chargerProfil();
 
 // Demander le prénom si pas encore renseigné (premier lancement)
