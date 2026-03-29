@@ -2546,7 +2546,9 @@ document.querySelectorAll(".mfilter").forEach(function(b){
   b.addEventListener("click",function(){
     filtreM=b.dataset.cat;
     document.querySelectorAll(".mfilter").forEach(function(x){x.classList.remove("active");});
-    b.classList.add("active");afficherPrix();
+    b.classList.add("active");
+    afficherPrix();
+    afficherPrixAvecHorodatage();
   });
 });
 function afficherPrix(){
@@ -2558,8 +2560,6 @@ function afficherPrix(){
     var cls=p.t==="up"?"trend-up":p.t==="down"?"trend-down":"trend-eq";
     grid.innerHTML+='<div class="prix-item"><div class="prix-ico">'+p.ico+'</div><div class="prix-info"><h4>'+p.nom+'</h4><p>📍 '+p.lieu+'</p></div><div class="prix-val"><div class="montant">'+p.prix+'</div><div class="unite">'+p.unite+'</div><div class="tendance '+cls+'">'+ico+' '+p.d+'</div></div></div>';
   });
-  var now=new Date();
-  document.getElementById("marche-date").textContent="Données du "+now.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+" · Bénin";
 }
 afficherPrix();
 
@@ -3042,15 +3042,42 @@ setTimeout(afficherPrixAvecHorodatage,100);
   screenCal.innerHTML='<button style="display:inline-flex;align-items:center;gap:6px;background:rgba(244,234,208,0.07);border:1px solid rgba(244,234,208,0.12);border-radius:10px;padding:6px 13px;color:rgba(244,234,208,0.6);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);margin-bottom:10px" onclick="goTab(\'accueil\')">← Retour</button><div class="screen-hd"><h2>📅 Calendrier agricole</h2><p>Saisons au Bénin · mois actuel en vert</p></div><div class="card" style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:3px"><thead><tr><th style="text-align:left;padding:6px 10px 6px 0;font-size:11px;color:rgba(244,234,208,0.40)">Culture</th>'+headMois+'</tr></thead><tbody>'+rows+'</tbody></table><div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:rgba(244,234,208,0.50)"><span>🌱 Semis</span><span>💊 Traitement</span><span>🌾 Récolte</span></div></div>';
   var content=document.getElementById("content");
   if(content)content.appendChild(screenCal);
-  // Ajouter bouton accès rapide dans l'accueil
-  var qbCal=document.createElement("div");
-  qbCal.className="quick-btn";
-  qbCal.id="qb-calendrier";
-  qbCal.innerHTML='<span class="qi">📅</span><div class="ql">Calendrier</div><div class="qd">Semis & récoltes</div>';
-  qbCal.onclick=function(){goTab("calendrier");};
-  // Remplacer la tuile "Mon profil" de l'accueil rapide par le calendrier (s'il reste de la place)
-  var grid=document.querySelector(".quick-grid");
-  if(grid&&grid.children.length<4)grid.appendChild(qbCal);
+
+  // Ajouter l'onglet Calendrier dans la barre de navigation
+  var nav=document.getElementById("nav");
+  if(nav){
+    // Remplacer l'onglet Profil par Calendrier + recréer Profil après
+    var navCal=document.createElement("button");
+    navCal.className="nav-btn";
+    navCal.dataset.tab="calendrier";
+    navCal.innerHTML='<span class="nav-ico">📅</span><span class="nav-lbl">Calendrier</span>';
+    navCal.addEventListener("click",function(){goTab("calendrier");});
+    // Insérer avant l'onglet Profil (dernier enfant)
+    var profBtn=nav.querySelector("[data-tab='profil']");
+    if(profBtn)nav.insertBefore(navCal,profBtn);
+    else nav.appendChild(navCal);
+  }
+
+  // Ajouter tuile dans l'accès rapide de l'accueil (remplace Mon profil)
+  var qbProfil=document.getElementById("qb-profil");
+  if(qbProfil){
+    // Transformer la tuile profil en tuile calendrier
+    qbProfil.id="qb-calendrier";
+    qbProfil.innerHTML='<span class="qi">📅</span><div class="ql">Calendrier</div><div class="qd">Semis & récoltes</div>';
+    qbProfil.onclick=function(){goTab("calendrier");};
+  } else {
+    // Ajouter si pas déjà là
+    var grid=document.querySelector(".quick-grid");
+    if(grid){
+      var qbCal=document.createElement("div");
+      qbCal.className="quick-btn";qbCal.id="qb-calendrier";
+      qbCal.innerHTML='<span class="qi">📅</span><div class="ql">Calendrier</div><div class="qd">Semis & récoltes</div>';
+      qbCal.onclick=function(){goTab("calendrier");};
+      // Remplacer le 4e élément
+      if(grid.children[3])grid.replaceChild(qbCal,grid.children[3]);
+      else grid.appendChild(qbCal);
+    }
+  }
 })();
 
 /* ══════════════════════════════════════════════
