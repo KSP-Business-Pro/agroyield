@@ -885,9 +885,15 @@ header{
   position:relative;display:flex;align-items:flex-end;gap:7px;
   background:rgba(255,255,255,0.06);
   border:2px solid rgba(244,234,208,0.13);
-  border-radius:20px;padding:9px 9px 9px 16px;
+  border-radius:20px;padding:9px 9px 9px 10px;
   transition:border-color 0.18s;
 }
+#mic-big-btn.mic-on{
+  background:linear-gradient(135deg,#8b2020,#5c1010) !important;
+  box-shadow:0 0 0 0 rgba(220,60,50,0.4);
+  animation:pulseR 1s ease-in-out infinite;
+}
+#mic-big-btn.mic-on::after{content:"■";font-size:20px}
 .input-wrap:focus-within{border-color:rgba(109,191,58,0.28)}
 #user-input{
   flex:1;background:transparent;border:none;outline:none;
@@ -1182,6 +1188,10 @@ header{
   font-family:var(--font-body);transition:all 0.18s;
 }
 .loc-sug:hover{background:rgba(109,191,58,0.12);border-color:rgba(109,191,58,0.25);color:#f4ead0}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:rgba(244,234,208,0.2);transition:all 0.3s}
+.ob-dot.active{width:24px;border-radius:4px;background:var(--lime)}
+.calc-cult-btn{padding:10px 14px;border-radius:22px;border:2px solid rgba(244,234,208,0.09);background:rgba(244,234,208,0.05);color:rgba(244,234,208,0.65);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all 0.18s;white-space:nowrap}
+.calc-cult-btn.active{background:rgba(109,191,58,0.14);border-color:rgba(109,191,58,0.32);color:#f4ead0}
 </style>
 </head>
 <body>
@@ -1457,7 +1467,7 @@ header{
           <div class="quick-btn" id="qb-assistant"><span class="qi">🤖</span><div class="ql">Parler à l'IA</div><div class="qd">Conseils personnalisés</div></div>
           <div class="quick-btn" id="qb-diagnostic"><span class="qi">🔬</span><div class="ql">Diagnostiquer</div><div class="qd">Photo plante ou animal</div></div>
           <div class="quick-btn" id="qb-marche"><span class="qi">📊</span><div class="ql">Prix du marché</div><div class="qd">Données du jour</div></div>
-          <div class="quick-btn" id="qb-profil"><span class="qi">👤</span><div class="ql">Mon profil</div><div class="qd">Paramètres</div></div>
+          <div class="quick-btn" id="qb-calculateur"><span class="qi">🧮</span><div class="ql">Calculateur</div><div class="qd">Coût et bénéfice</div></div>
         </div>
       </div>
       <div class="card">
@@ -1654,14 +1664,84 @@ header{
       </div>
     </div>
 
+    <!-- ── CALCULATEUR ── -->
+    <div class="screen" id="screen-calculateur">
+      <div class="screen-hd"><h2>🧮 Calculateur agricole</h2><p>Estimez votre coût et votre bénéfice</p></div>
+
+      <div class="card">
+        <div class="card-title">🌾 Votre culture</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px" id="calc-cultures">
+          <button class="calc-cult-btn active" data-prix="180" data-rend="1200">🌽 Maïs</button>
+          <button class="calc-cult-btn" data-prix="420" data-rend="1500">🍚 Riz</button>
+          <button class="calc-cult-btn" data-prix="350" data-rend="800">🥜 Arachide</button>
+          <button class="calc-cult-btn" data-prix="150" data-rend="900">🌾 Sorgho</button>
+          <button class="calc-cult-btn" data-prix="300" data-rend="2000">🧅 Oignon</button>
+          <button class="calc-cult-btn" data-prix="250" data-rend="3000">🍅 Tomate</button>
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px">📐 Surface cultivée</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="calc-surface" min="0.1" max="5" step="0.1" value="0.5" style="flex:1" oninput="calculer()"/>
+            <span id="calc-surface-val" style="min-width:60px;text-align:right;font-size:15px;font-weight:700;color:var(--ivory)">0.5 ha</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px">🧪 Coût des intrants</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="calc-intrants" min="0" max="150000" step="5000" value="30000" style="flex:1" oninput="calculer()"/>
+            <span id="calc-intrants-val" style="min-width:80px;text-align:right;font-size:13px;font-weight:700;color:var(--ivory)">30 000 F</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom:4px">
+          <label style="font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px">👷 Coût main d'œuvre</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="calc-main" min="0" max="100000" step="5000" value="20000" style="flex:1" oninput="calculer()"/>
+            <span id="calc-main-val" style="min-width:80px;text-align:right;font-size:13px;font-weight:700;color:var(--ivory)">20 000 F</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Résultat -->
+      <div class="card" id="calc-result-card">
+        <div class="card-title">📊 Résultat estimé</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+          <div style="background:rgba(244,234,208,0.05);border:1px solid rgba(244,234,208,0.09);border-radius:14px;padding:14px;text-align:center">
+            <div style="font-size:11px;color:rgba(244,234,208,0.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Revenu brut</div>
+            <div id="calc-revenu" style="font-family:var(--font-display);font-size:22px;font-weight:900;color:var(--lime2)">—</div>
+            <div style="font-size:10px;color:rgba(244,234,208,0.35);margin-top:2px">FCFA</div>
+          </div>
+          <div style="background:rgba(244,234,208,0.05);border:1px solid rgba(244,234,208,0.09);border-radius:14px;padding:14px;text-align:center">
+            <div style="font-size:11px;color:rgba(244,234,208,0.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Bénéfice net</div>
+            <div id="calc-benefice" style="font-family:var(--font-display);font-size:22px;font-weight:900;color:var(--sun)">—</div>
+            <div style="font-size:10px;color:rgba(244,234,208,0.35);margin-top:2px">FCFA</div>
+          </div>
+        </div>
+        <div id="calc-verdict" style="background:rgba(109,191,58,0.08);border:1px solid rgba(109,191,58,0.18);border-radius:12px;padding:12px 14px;font-size:13px;color:rgba(244,234,208,0.80);line-height:1.6;margin-bottom:12px"></div>
+        <button onclick="demanderConseilIA()" style="width:100%;padding:13px;background:rgba(109,191,58,0.10);border:2px solid rgba(109,191,58,0.22);border-radius:13px;color:var(--lime2);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:all 0.18s">
+          🤖 Demander conseil à l'IA
+        </button>
+      </div>
+    </div>
+
   </div><!-- #content -->
 
   <div id="input-bar">
-    <div class="input-wrap">
-      <textarea id="user-input" rows="1" placeholder="Posez votre question agricole…"></textarea>
-      <div class="input-btns">
-        <button class="ibtn" id="mic-btn"><span class="ibtn-lbl">🎤</span></button>
-        <button class="ibtn" id="send-btn">➤</button>
+    <!-- Micro principal — toujours visible et gros -->
+    <div id="mic-zone" style="display:none;padding:8px 16px 4px;text-align:center">
+      <button id="mic-big-btn" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#4a8c28,#2a5514);border:none;color:#f4ead0;font-size:28px;cursor:pointer;box-shadow:0 6px 22px rgba(61,122,32,0.45);transition:all 0.2s;display:flex;align-items:center;justify-content:center;margin:0 auto">🎤</button>
+      <div id="mic-status-txt" style="font-size:11px;color:rgba(244,234,208,0.35);margin-top:5px;letter-spacing:0.5px">Appuyez pour parler</div>
+    </div>
+    <!-- Barre de texte -->
+    <div style="padding:4px 16px 14px">
+      <div class="input-wrap">
+        <button class="ibtn" id="mic-btn" title="Parler"><span class="ibtn-lbl">🎤</span></button>
+        <textarea id="user-input" rows="1" placeholder="Tapez ou parlez…"></textarea>
+        <div class="input-btns">
+          <button class="ibtn" id="send-btn">➤</button>
+        </div>
       </div>
     </div>
     <p class="footer-note">Propulsé par <span>Claude AI</span> · AgroYield</p>
@@ -1675,7 +1755,21 @@ header{
     <button class="nav-btn" data-tab="profil"><span class="nav-ico">👤</span><span class="nav-lbl">Profil</span></button>
   </div>
 
-  <!-- MODAL PAIEMENT -->
+  <!-- ══ TUTORIEL PREMIER LANCEMENT ══ -->
+  <div id="onboarding" style="display:none;position:fixed;inset:0;z-index:800;background:linear-gradient(160deg,#0c1a08,#0a1205);flex-direction:column">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center" id="ob-content"></div>
+    <!-- Indicateurs de progression -->
+    <div style="display:flex;justify-content:center;gap:8px;padding:0 0 16px">
+      <div class="ob-dot active" id="ob-d0"></div>
+      <div class="ob-dot" id="ob-d1"></div>
+      <div class="ob-dot" id="ob-d2"></div>
+      <div class="ob-dot" id="ob-d3"></div>
+    </div>
+    <div style="padding:0 20px 28px;display:flex;gap:10px">
+      <button id="ob-skip" style="flex:1;padding:14px;background:rgba(244,234,208,0.06);border:1px solid rgba(244,234,208,0.12);border-radius:14px;color:rgba(244,234,208,0.45);font-size:14px;cursor:pointer;font-family:var(--font-body)">Ignorer</button>
+      <button id="ob-next" style="flex:2;padding:14px;background:linear-gradient(135deg,#4a8c28,#2a5514);border:none;border-radius:14px;color:#f4ead0;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-body);box-shadow:0 6px 20px rgba(61,122,32,0.4)">Suivant →</button>
+    </div>
+  </div>
   <div class="modal-ov" id="modal-paiement" style="z-index:400">
     <div class="modal-bg" id="pay-modal-bg"></div>
     <div class="pay-modal-box">
@@ -1815,7 +1909,7 @@ setInterval(rotateDemoMsg, 5000);
    APP LOGIC
 ═══════════════════════════════════════════ */
 
-var PROMPT = "Tu es AgroYield, assistant IA expert en agriculture agro-pastorale africaine (Bénin, Afrique de l'Ouest).\n\n15 problèmes clés : 1.Pluies/Sécheresse 2.Sol 3.Semences 4.Intrants 5.Rendements 6.Ravageurs/Maladies 7.Irrigation 8.Post-récolte 9.Marchés 10.Transformation 11.Fourrage 12.Maladies animales 13.Productivité laitière 14.Conflits fonciers 15.Financement.\n\nRègles IMPÉRATIVES :\n- Réponses pratiques, sans jargon, adaptées à l'Afrique subsaharienne\n- Maximum 180 mots par réponse\n- Solutions accessibles sans gros investissements\n- Toujours encourager et valoriser le fermier\n- Utiliser des emojis pertinents pour la lisibilité\n- Structurer avec des points courts et actionnables\n- Si urgence sanitaire animale/végétale : mentionner quand consulter un vétérinaire/agronome";
+var PROMPT = "Tu es AgroYield, conseiller agricole de confiance pour les petits fermiers du Bénin et d'Afrique de l'Ouest. Tu parles comme un ami qui connaît bien l'agriculture, pas comme un livre.\n\nFORMAT OBLIGATOIRE pour chaque réponse :\n1️⃣ [Action immédiate — ce qu'il faut faire aujourd'hui]\n2️⃣ [Action suivante — dans les prochains jours]\n3️⃣ [Résultat attendu — ce que le fermier va voir]\n\n⚠️ Si urgent : ajouter une ligne \"📞 Appelez un vétérinaire / agronome si : [condition précise]\"\n\nRègles STRICTES :\n- Maximum 3 étapes numérotées, jamais plus\n- Chaque étape = 1 seule phrase courte et concrète\n- Zéro jargon technique — parler comme au marché\n- Citer des produits, plantes, pratiques disponibles au Bénin\n- Toujours terminer par une phrase d'encouragement courte\n- Exemples locaux : Parakou, Cotonou, marché de Dantokpa, maïs local, neem, etc.\n- Maximum 120 mots au total";
 
 var CATS = {
   cultures:{label:"🌽 Cultures",sections:[
@@ -2047,8 +2141,10 @@ document.getElementById("btn-save-pay").addEventListener("click",function(){
 function goTab(tab){
   document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
   document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.remove("active");});
-  document.getElementById("screen-"+tab).classList.add("active");
-  document.querySelector("[data-tab='"+tab+"']").classList.add("active");
+  var sc=document.getElementById("screen-"+tab);
+  if(sc)sc.classList.add("active");
+  var nb=document.querySelector("[data-tab='"+tab+"']");
+  if(nb)nb.classList.add("active");
   elInputBar.classList.toggle("on",tab==="assistant"&&consultOK);
   if(tab!=="assistant"){elBtnPrint.classList.remove("show");elBtnExit.classList.remove("show");elStatusPill.style.display="";}
   else if(consultOK){elStatusPill.style.display="none";elBtnPrint.classList.add("show");elBtnExit.classList.add("show");}
@@ -2121,13 +2217,25 @@ function majEnvoi(){var a=elTA.value.trim().length>0&&!enCharge;elSend.className
   elMic.innerHTML='<span class="ibtn-lbl">🎤 VX</span>';
 })();
 function startMic(){
-  if(!micRecog)return;micOn=true;elMic.classList.add("mic-on");
-  elMic.innerHTML='<span class="ibtn-lbl">■ STOP</span>';
+  if(!micRecog)return;micOn=true;
+  // Petit bouton
+  elMic.classList.add("mic-on");
+  elMic.innerHTML='<span class="ibtn-lbl">■</span>';
+  // Gros bouton
+  var mb=document.getElementById("mic-big-btn");
+  if(mb){mb.classList.add("mic-on");mb.textContent="";}
+  var ms=document.getElementById("mic-status-txt");
+  if(ms){ms.textContent="🔴 Parlez… appuyez pour arrêter";ms.style.color="rgba(220,100,80,0.85)";}
   micRecog.start();
 }
 function stopMic(){
-  if(!micRecog)return;micOn=false;elMic.classList.remove("mic-on");
-  elMic.innerHTML='<span class="ibtn-lbl">🎤 VX</span>';
+  if(!micRecog)return;micOn=false;
+  elMic.classList.remove("mic-on");
+  elMic.innerHTML='<span class="ibtn-lbl">🎤</span>';
+  var mb=document.getElementById("mic-big-btn");
+  if(mb){mb.classList.remove("mic-on");mb.textContent="🎤";}
+  var ms=document.getElementById("mic-status-txt");
+  if(ms){ms.textContent="Appuyez pour parler";ms.style.color="rgba(244,234,208,0.35)";}
   try{micRecog.stop();}catch(e){}
 }
 
@@ -2159,6 +2267,19 @@ document.querySelectorAll(".lang-pill").forEach(function(p){
   });
 });
 
+/* ── FOLLOW-UP QUESTIONS ── */
+var FOLLOWUPS_PAR_THEME = {
+  cultures:["Et si ça ne marche pas ?","Où acheter ces produits ?","Combien ça coûte ?"],
+  elevage:["Quand appeler le vétérinaire ?","Où trouver ce médicament ?","Combien de temps avant la guérison ?"],
+  default:["Et si ça ne marche pas ?","Où trouver ces produits au Bénin ?","Combien ça coûte environ ?"]
+};
+function getFollowups(texteReponse){
+  var t=texteReponse.toLowerCase();
+  if(t.indexOf("volail")>=0||t.indexOf("poulet")>=0||t.indexOf("bœuf")>=0||t.indexOf("animal")>=0||t.indexOf("vache")>=0)return FOLLOWUPS_PAR_THEME.elevage;
+  if(t.indexOf("maïs")>=0||t.indexOf("sol")>=0||t.indexOf("semence")>=0||t.indexOf("ravageur")>=0||t.indexOf("culture")>=0)return FOLLOWUPS_PAR_THEME.cultures;
+  return FOLLOWUPS_PAR_THEME.default;
+}
+
 /* ── CHAT ENGINE ── */
 function lancer(texte){
   if(!paiementOK){pendingTexte=texte;afficherModalPaiement();return;}
@@ -2169,8 +2290,19 @@ function activerChat(){
   elHExp.style.display="none";elHCmp.style.display="flex";elWelcome.style.display="none";
   elCatPanel.classList.remove("show");elChat.classList.add("on");elInputBar.classList.add("on");
   elStatusPill.style.display="none";elBtnPrint.classList.add("show");elBtnExit.classList.add("show");
+  // Afficher la zone micro principale
+  var mz=document.getElementById("mic-zone");if(mz)mz.style.display="block";
+  // Connecter le gros bouton micro
+  var mb=document.getElementById("mic-big-btn");
+  if(mb&&!mb._connected){
+    mb._connected=true;
+    mb.addEventListener("click",function(){micOn?stopMic():startMic();});
+  }
 }
 function ajouterBulle(role,texte){
+  // Retirer les anciennes questions de suivi
+  var oldFup=document.getElementById("followup-row");if(oldFup)oldFup.remove();
+
   var row=document.createElement("div");row.className="msg-row "+role;
   if(role==="bot"){var a=document.createElement("div");a.className="av bot";a.textContent="🌾";row.appendChild(a);}
   var b=document.createElement("div");b.className="bub "+role;b.textContent=texte;
@@ -2182,7 +2314,28 @@ function ajouterBulle(role,texte){
   }
   row.appendChild(b);
   if(role==="user"){var a2=document.createElement("div");a2.className="av user";a2.textContent="👨‍🌾";row.appendChild(a2);}
-  elChat.appendChild(row);row.scrollIntoView({behavior:"smooth"});
+  elChat.appendChild(row);
+
+  // Questions de suivi après chaque réponse bot
+  if(role==="bot"){
+    var fup=document.createElement("div");
+    fup.id="followup-row";
+    fup.style.cssText="display:flex;flex-wrap:wrap;gap:7px;padding:4px 0 6px 36px";
+    var qs=getFollowups(texte);
+    qs.forEach(function(q){
+      var btn=document.createElement("button");
+      btn.style.cssText="background:rgba(109,191,58,0.08);border:1px solid rgba(109,191,58,0.20);border-radius:20px;padding:8px 14px;color:rgba(244,234,208,0.75);font-size:12px;cursor:pointer;font-family:var(--font-body);transition:all 0.18s;line-height:1.3;text-align:left";
+      btn.textContent=q;
+      btn.onmouseover=function(){this.style.background="rgba(109,191,58,0.16)";this.style.color="#f4ead0";};
+      btn.onmouseout=function(){this.style.background="rgba(109,191,58,0.08)";this.style.color="rgba(244,234,208,0.75)";};
+      btn.onclick=function(){fup.remove();envoyer(q);};
+      fup.appendChild(btn);
+    });
+    elChat.appendChild(fup);
+    fup.scrollIntoView({behavior:"smooth"});
+  } else {
+    row.scrollIntoView({behavior:"smooth"});
+  }
 }
 function showTyping(){
   var row=document.createElement("div");row.className="msg-row bot";row.id="typing-row";
@@ -2441,7 +2594,103 @@ document.getElementById("btn-loc-ok").addEventListener("click",function(){
 document.getElementById("loc-input").addEventListener("keydown",function(e){
   if(e.key==="Enter"){document.getElementById("btn-loc-ok").click();}
 });
-function imprimer(){
+/* ── CALCULATEUR (amélioration 4) ── */
+var calcCulturePrix=180, calcCultureRend=1200, calcCultureNom="Maïs";
+
+document.querySelectorAll(".calc-cult-btn").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.querySelectorAll(".calc-cult-btn").forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    calcCulturePrix=parseInt(b.dataset.prix);
+    calcCultureRend=parseInt(b.dataset.rend);
+    calcCultureNom=b.textContent.trim();
+    calculer();
+  });
+});
+
+function fmt(n){return Math.round(n).toLocaleString("fr-FR");}
+function calculer(){
+  var surface=parseFloat(document.getElementById("calc-surface").value)||0.5;
+  var intrants=parseInt(document.getElementById("calc-intrants").value)||0;
+  var main=parseInt(document.getElementById("calc-main").value)||0;
+  document.getElementById("calc-surface-val").textContent=surface.toFixed(1)+" ha";
+  document.getElementById("calc-intrants-val").textContent=fmt(intrants)+" F";
+  document.getElementById("calc-main-val").textContent=fmt(main)+" F";
+  var rendement=calcCultureRend*surface;
+  var revenu=rendement*calcCulturePrix;
+  var coutTotal=intrants+main;
+  var benefice=revenu-coutTotal;
+  document.getElementById("calc-revenu").textContent=fmt(revenu);
+  var elB=document.getElementById("calc-benefice");
+  elB.textContent=fmt(benefice);
+  elB.style.color=benefice>=0?"var(--sun)":"#e05040";
+  var v=document.getElementById("calc-verdict");
+  var ratio=coutTotal>0?(benefice/coutTotal*100):0;
+  if(benefice>0){
+    v.style.background="rgba(109,191,58,0.08)";v.style.borderColor="rgba(109,191,58,0.18)";
+    v.textContent="✅ Bonne affaire ! Pour chaque franc investi, vous gagnez "+fmt(ratio)+" F. Rendement estimé : "+fmt(rendement)+" kg sur "+surface+" ha.";
+  } else if(benefice>-20000){
+    v.style.background="rgba(240,184,64,0.08)";v.style.borderColor="rgba(240,184,64,0.18)";
+    v.textContent="⚠️ Faible bénéfice. Essayez de réduire les intrants ou d'augmenter la surface. Rendement estimé : "+fmt(rendement)+" kg.";
+  } else {
+    v.style.background="rgba(224,80,64,0.08)";v.style.borderColor="rgba(224,80,64,0.18)";
+    v.textContent="❌ Perte prévue. Réduisez vos coûts ou augmentez la surface. Demandez conseil à l'IA.";
+  }
+}
+calculer();
+
+function demanderConseilIA(){
+  var surface=document.getElementById("calc-surface").value;
+  var intrants=document.getElementById("calc-intrants-val").textContent;
+  var revenu=document.getElementById("calc-revenu").textContent;
+  var benefice=document.getElementById("calc-benefice").textContent;
+  goTab("assistant");
+  lancer("J'ai "+surface+" ha de "+calcCultureNom+". Mes intrants coûtent "+intrants+". Mon revenu estimé est "+revenu+" FCFA et mon bénéfice "+benefice+" FCFA. Comment améliorer ma rentabilité ?");
+}
+document.getElementById("qb-calculateur").onclick=function(){goTab("calculateur");};
+
+/* ── ONBOARDING (amélioration 5) ── */
+var OB_STEPS=[
+  {ico:"🎤",titre:"Parlez à votre conseiller",texte:"Appuyez sur le micro et posez votre question à voix haute. Pas besoin d'écrire !",couleur:"rgba(109,191,58,0.15)"},
+  {ico:"🤖",titre:"Choisissez un thème",texte:"Cultures, élevage, météo, marché… Touchez une grande tuile pour commencer.",couleur:"rgba(240,184,64,0.12)"},
+  {ico:"🔬",titre:"Diagnostiquez par photo",texte:"Prenez une photo d'une plante ou d'un animal malade. L'IA analyse et donne des conseils.",couleur:"rgba(74,144,217,0.12)"},
+  {ico:"📊",titre:"Consultez les prix du marché",texte:"Maïs, tomates, bétail… Les prix du jour au Bénin, mis à jour chaque matin.",couleur:"rgba(109,191,58,0.15)"}
+];
+var obStep=0;
+
+function afficherObStep(i){
+  var s=OB_STEPS[i];
+  var c=document.getElementById("ob-content");
+  c.innerHTML='<div style="width:110px;height:110px;border-radius:50%;background:'+s.couleur+';border:2px solid rgba(244,234,208,0.12);display:flex;align-items:center;justify-content:center;font-size:54px;margin-bottom:28px;animation:float 3s ease-in-out infinite">'+s.ico+'</div><h2 style="font-family:var(--font-display);font-size:28px;font-weight:900;color:#f4ead0;margin-bottom:14px;line-height:1.15;letter-spacing:-0.5px">'+s.titre+'</h2><p style="font-size:16px;color:rgba(244,234,208,0.58);line-height:1.75;max-width:300px">'+s.texte+'</p>';
+  document.querySelectorAll(".ob-dot").forEach(function(d,idx){d.classList.toggle("active",idx===i);});
+  var btn=document.getElementById("ob-next");
+  btn.textContent=i<OB_STEPS.length-1?"Suivant →":"🚀 Commencer !";
+}
+
+function fermerOnboarding(){
+  document.getElementById("onboarding").style.display="none";
+  localStorage.setItem("ay_ob_done","1");
+}
+
+document.getElementById("ob-next").addEventListener("click",function(){
+  if(obStep<OB_STEPS.length-1){obStep++;afficherObStep(obStep);}
+  else{fermerOnboarding();}
+});
+document.getElementById("ob-skip").addEventListener("click",fermerOnboarding);
+
+function lancerOnboarding(){
+  var done=false;try{done=localStorage.getItem("ay_ob_done")==="1";}catch(e){}
+  if(!done){
+    obStep=0;afficherObStep(0);
+    document.getElementById("onboarding").style.display="flex";
+  }
+}
+// Lancer l'onboarding au démarrage de l'app
+var _launchAppOrig=launchApp;
+launchApp=function(){_launchAppOrig();setTimeout(lancerOnboarding,600);};
+
+/* ── NAVIGATION : ajouter "calculateur" ── */
+document.getElementById("qb-calculateur").onclick=function(){goTab("calculateur");};
   if(histo.length===0)return;
   var now=new Date();
   var ds=now.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
