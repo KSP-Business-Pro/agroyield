@@ -2688,6 +2688,8 @@ var _launchAppOrig=launchApp;
 launchApp=function(){_launchAppOrig();setTimeout(lancerOnboarding,600);};
 
 /* ── NAVIGATION : ajouter "calculateur" déjà câblé ci-dessus ── */
+
+function imprimer(){
   if(histo.length===0)return;
   var now=new Date();
   var ds=now.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
