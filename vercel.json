@@ -1,1 +1,11 @@
-{ "functions": {"api/chat.js":{"maxDuration":30},"api/notify.js":{"maxDuration":10}}, "rewrites": [{"source":"/","destination":"/index.html"}] } 
+{
+  "version": 2,
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "api/*.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
