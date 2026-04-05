@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AgroYield — Dashboard Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c1005;--bg2:#111a08;--bg3:#1a2610;
+  --ivory:#f4ead0;--gold:#d4902a;--lime:#6dbf3a;--lime2:#8fd456;
+  --sun:#f0b840;--red:#e05040;--blue:#7ab8e8;
+  --card:rgba(244,234,208,0.04);--border:rgba(244,234,208,0.09);
+  --font-body:'DM Sans',sans-serif;--font-display:'Fraunces',serif;
+}
+body{background:var(--bg);color:var(--ivory);font-family:var(--font-body);min-height:100vh}
+
+/* ── LOCK SCREEN ── */
+#lock-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:linear-gradient(160deg,#0c1a08,#0a1205)}
+.lock-logo{font-size:52px;margin-bottom:16px}
+.lock-title{font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--ivory);margin-bottom:6px}
+.lock-sub{font-size:13px;color:rgba(244,234,208,0.45);margin-bottom:28px}
+.lock-input{width:100%;max-width:320px;background:rgba(244,234,208,0.07);border:2px solid rgba(244,234,208,0.15);border-radius:14px;padding:14px 16px;color:var(--ivory);font-size:16px;font-family:var(--font-body);outline:none;text-align:center;letter-spacing:4px;margin-bottom:12px}
+.lock-input:focus{border-color:rgba(109,191,58,0.45)}
+.lock-btn{width:100%;max-width:320px;padding:14px;background:linear-gradient(135deg,#4a8c28,#2a5514);border:none;border-radius:14px;color:#f4ead0;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-body);box-shadow:0 6px 20px rgba(61,122,32,0.4)}
+.lock-err{font-size:13px;color:#e08070;margin-top:8px;display:none}
+
+/* ── HEADER ── */
+#app-admin{display:none;flex-direction:column;min-height:100vh}
+header{background:linear-gradient(135deg,#1a2e10,#0e1c08);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.hdr-logo{font-size:28px}
+.hdr-txt h1{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--ivory)}
+.hdr-txt p{font-size:11px;color:rgba(244,234,208,0.42);margin-top:1px}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:10px}
+.env-badge{padding:5px 13px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(240,184,64,0.14);border:1px solid rgba(240,184,64,0.28);color:var(--sun)}
+.btn-logout{background:rgba(220,60,50,0.10);border:1px solid rgba(220,60,50,0.22);border-radius:10px;padding:6px 13px;color:rgba(240,130,120,0.85);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-body)}
+
+/* ── NAV TABS ── */
+.nav-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nav-tabs::-webkit-scrollbar{height:2px}
+.tab-btn{padding:12px 16px;font-size:13px;font-weight:600;color:rgba(244,234,208,0.45);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-body);white-space:nowrap;transition:all 0.18s}
+.tab-btn.active{color:var(--lime2);border-bottom-color:var(--lime)}
+
+/* ── CONTENT ── */
+.tab-content{display:none;padding:16px}
+.tab-content.active{display:block}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center}
+.stat-ico{font-size:24px;margin-bottom:6px}
+.stat-val{font-family:var(--font-display);font-size:28px;font-weight:900;line-height:1;margin-bottom:4px}
+.stat-lbl{font-size:11px;color:rgba(244,234,208,0.42);text-transform:uppercase;letter-spacing:0.8px}
+.s-green .stat-val{color:var(--lime2)}
+.s-gold .stat-val{color:var(--sun)}
+.s-blue .stat-val{color:var(--blue)}
+.s-red .stat-val{color:#e08070}
+
+/* ── SECTION TITLE ── */
+.section-title{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;margin-top:20px}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;min-width:480px}
+th{background:rgba(244,234,208,0.06);padding:10px 14px;font-size:11px;font-weight:700;color:var(--gold);text-align:left;letter-spacing:0.8px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:13px;color:rgba(244,234,208,0.75);border-bottom:1px solid rgba(244,234,208,0.05)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(244,234,208,0.03)}
+.badge-ok{display:inline-block;padding:2px 10px;border-radius:20px;background:rgba(109,191,58,0.14);border:1px solid rgba(109,191,58,0.28);color:var(--lime2);font-size:11px;font-weight:700}
+.badge-test{display:inline-block;padding:2px 10px;border-radius:20px;background:rgba(240,184,64,0.12);border:1px solid rgba(240,184,64,0.25);color:var(--sun);font-size:11px;font-weight:700}
+
+/* ── CHART ── */
+.chart-bar-wrap{margin-bottom:20px}
+.chart-bar-item{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.chart-bar-lbl{font-size:12px;color:rgba(244,234,208,0.55);width:80px;flex-shrink:0;text-align:right}
+.chart-bar-track{flex:1;height:20px;background:rgba(244,234,208,0.06);border-radius:10px;overflow:hidden}
+.chart-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,#3d7a20,#6dbf3a);transition:width 0.8s ease}
+.chart-bar-val{font-size:12px;font-weight:700;color:var(--lime2);width:60px;flex-shrink:0}
+
+/* ── CONFIG PANEL ── */
+.config-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.config-label{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px}
+.config-input{width:100%;background:rgba(244,234,208,0.06);border:1px solid rgba(244,234,208,0.12);border-radius:10px;padding:10px 13px;color:var(--ivory);font-size:14px;font-family:var(--font-body);outline:none;transition:border-color 0.18s;margin-bottom:10px}
+.config-input:focus{border-color:rgba(240,184,64,0.40)}
+.btn-save{padding:11px 20px;background:linear-gradient(135deg,#3d7a20,#2a5514);border:none;border-radius:12px;color:#f4ead0;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:all 0.2s}
+.btn-save:hover{transform:translateY(-1px)}
+.btn-danger{padding:10px 18px;background:rgba(220,60,50,0.10);border:1px solid rgba(220,60,50,0.25);border-radius:12px;color:rgba(240,130,120,0.85);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body)}
+.status-msg{font-size:12px;margin-top:6px;padding:7px 12px;border-radius:9px;display:none}
+.status-ok{background:rgba(109,191,58,0.10);border:1px solid rgba(109,191,58,0.22);color:var(--lime2)}
+.status-err{background:rgba(220,60,50,0.10);border:1px solid rgba(220,60,50,0.22);color:#e08070}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:32px 16px;color:rgba(244,234,208,0.28);font-size:14px}
+.empty-ico{font-size:40px;display:block;margin-bottom:10px}
+
+/* ── PROMO CODES ── */
+.promo-item{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px}
+.promo-code{font-family:monospace;font-size:15px;font-weight:700;color:var(--lime2);flex:1;letter-spacing:2px}
+.promo-meta{font-size:11px;color:rgba(244,234,208,0.38)}
+.promo-del{background:none;border:none;cursor:pointer;font-size:16px;color:rgba(244,234,208,0.30);transition:color 0.18s}
+.promo-del:hover{color:#e05040}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lock-screen">
+  <div class="lock-logo">🌾</div>
+  <h1 class="lock-title">AgroYield Admin</h1>
+  <p class="lock-sub">Tableau de bord de gestion · Accès restreint</p>
+  <input class="lock-input" id="lock-pwd" type="password" placeholder="••••••••" maxlength="20" autocomplete="off"/>
+  <button class="lock-btn" id="lock-btn">🔐 Accéder au dashboard</button>
+  <p class="lock-err" id="lock-err">❌ Mot de passe incorrect</p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="app-admin">
+
+  <header>
+    <div class="hdr-logo">🌾</div>
+    <div class="hdr-txt">
+      <h1>AgroYield Admin</h1>
+      <p>Tableau de bord de gestion</p>
+    </div>
+    <div class="hdr-r">
+      <div class="env-badge" id="env-badge">🧪 Test</div>
+      <button class="btn-logout" id="btn-logout">Déconnexion</button>
+    </div>
+  </header>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" data-tab="vue-ensemble">📊 Vue d'ensemble</button>
+    <button class="tab-btn" data-tab="transactions">💳 Transactions</button>
+    <button class="tab-btn" data-tab="analytiques">📈 Analytiques</button>
+    <button class="tab-btn" data-tab="promos">🎁 Codes promo</button>
+    <button class="tab-btn" data-tab="config">⚙️ Configuration</button>
+  </div>
+
+  <!-- ══ VUE D'ENSEMBLE ══ -->
+  <div class="tab-content active" id="tab-vue-ensemble">
+
+    <div class="stats-grid" style="margin-top:16px">
+      <div class="stat-card s-green">
+        <div class="stat-ico">💰</div>
+        <div class="stat-val" id="d-revenus">0</div>
+        <div class="stat-lbl">FCFA encaissés</div>
+      </div>
+      <div class="stat-card s-blue">
+        <div class="stat-ico">👥</div>
+        <div class="stat-val" id="d-sessions">0</div>
+        <div class="stat-lbl">Consultations</div>
+      </div>
+      <div class="stat-card s-gold">
+        <div class="stat-ico">⏱️</div>
+        <div class="stat-val" id="d-minutes">0</div>
+        <div class="stat-lbl">Minutes conseil</div>
+      </div>
+      <div class="stat-card s-red">
+        <div class="stat-ico">🎁</div>
+        <div class="stat-val" id="d-promos-used">0</div>
+        <div class="stat-lbl">Promos utilisées</div>
+      </div>
+    </div>
+
+    <div class="section-title">Revenus par méthode de paiement</div>
+    <div class="chart-bar-wrap" id="chart-methodes">
+      <div class="empty"><span class="empty-ico">📊</span>Aucune transaction pour le moment</div>
+    </div>
+
+    <div class="section-title">5 dernières transactions</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Méthode</th><th>Montant</th><th>N° transaction</th><th>Statut</th></tr></thead>
+        <tbody id="tbody-recent"></tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Statut système</div>
+    <div style="display:flex;flex-direction:column;gap:8px" id="system-status">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px">
+        <span style="font-size:13px">API CinetPay</span>
+        <span id="status-cinetpay" style="font-size:12px;font-weight:700;color:var(--sun)">⏳ Non configurée</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px">
+        <span style="font-size:13px">Webhook /api/notify</span>
+        <span id="status-webhook" style="font-size:12px;font-weight:700;color:var(--lime2)">✅ Actif</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px">
+        <span style="font-size:13px">API Claude IA</span>
+        <span id="status-claude" style="font-size:12px;font-weight:700;color:var(--lime2)">✅ Opérationnelle</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TRANSACTIONS ══ -->
+  <div class="tab-content" id="tab-transactions">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 12px">
+      <div style="font-size:14px;font-weight:700;color:var(--ivory)" id="tx-count">0 transaction(s)</div>
+      <button class="btn-save" id="btn-export-csv" style="font-size:12px;padding:8px 14px">📄 Exporter CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Date</th><th>Agriculteur</th><th>Méthode</th><th>Montant</th><th>N° transaction</th><th>Statut</th></tr></thead>
+        <tbody id="tbody-all"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ ANALYTIQUES ══ -->
+  <div class="tab-content" id="tab-analytiques">
+    <div class="stats-grid" style="margin-top:16px">
+      <div class="stat-card s-green">
+        <div class="stat-ico">📅</div>
+        <div class="stat-val" id="a-auj">0</div>
+        <div class="stat-lbl">Aujourd'hui</div>
+      </div>
+      <div class="stat-card s-blue">
+        <div class="stat-ico">📆</div>
+        <div class="stat-val" id="a-semaine">0</div>
+        <div class="stat-lbl">Cette semaine</div>
+      </div>
+      <div class="stat-card s-gold">
+        <div class="stat-ico">🗓️</div>
+        <div class="stat-val" id="a-mois">0</div>
+        <div class="stat-lbl">Ce mois</div>
+      </div>
+      <div class="stat-card s-red">
+        <div class="stat-ico">💳</div>
+        <div class="stat-val" id="a-panier">2 500</div>
+        <div class="stat-lbl">Panier moyen (F)</div>
+      </div>
+    </div>
+
+    <div class="section-title">Répartition par méthode</div>
+    <div id="chart-repartition" class="chart-bar-wrap"></div>
+
+    <div class="section-title">Évolution (7 derniers jours)</div>
+    <div id="chart-evolution" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px">
+      <canvas id="canvas-evolution" height="120"></canvas>
+    </div>
+  </div>
+
+  <!-- ══ CODES PROMO ══ -->
+  <div class="tab-content" id="tab-promos">
+    <div class="config-card" style="margin-top:16px">
+      <span class="config-label">Créer un code promo</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input class="config-input" id="promo-code-input" placeholder="AGRO2025" style="flex:1;min-width:140px;margin:0" maxlength="12"/>
+        <select id="promo-type" style="background:rgba(244,234,208,0.06);border:1px solid rgba(244,234,208,0.12);border-radius:10px;padding:10px 12px;color:var(--ivory);font-family:var(--font-body);font-size:13px;outline:none">
+          <option value="gratuit">1 consultation gratuite</option>
+          <option value="50">50% de réduction</option>
+          <option value="500">-500 FCFA</option>
+        </select>
+        <input class="config-input" id="promo-max" type="number" placeholder="Nb utilisations max" min="1" max="1000" style="width:160px;margin:0"/>
+        <button class="btn-save" id="btn-creer-promo" style="white-space:nowrap">+ Créer</button>
+      </div>
+      <div style="margin-top:8px">
+        <button id="btn-gen-promo" style="background:rgba(74,144,217,0.10);border:1px solid rgba(74,144,217,0.22);border-radius:10px;padding:7px 14px;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-body)">🎲 Générer code aléatoire</button>
+      </div>
+    </div>
+
+    <div class="section-title">Codes actifs</div>
+    <div id="promo-liste">
+      <div class="empty"><span class="empty-ico">🎁</span>Aucun code promo créé</div>
+    </div>
+  </div>
+
+  <!-- ══ CONFIGURATION ══ -->
+  <div class="tab-content" id="tab-config">
+    <div class="config-card" style="margin-top:16px">
+      <span class="config-label">Mot de passe admin</span>
+      <input class="config-input" id="new-pwd" type="password" placeholder="Nouveau mot de passe"/>
+      <button class="btn-save" id="btn-change-pwd">🔐 Changer</button>
+      <div class="status-msg" id="pwd-status"></div>
+    </div>
+
+    <div class="config-card">
+      <span class="config-label">Configuration CinetPay</span>
+      <input class="config-input" id="cfg-apikey" type="password" placeholder="Clé API CinetPay"/>
+      <input class="config-input" id="cfg-siteid" placeholder="Site ID CinetPay"/>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button id="cfg-btn-test" style="flex:1;padding:9px;background:rgba(109,191,58,0.10);border:1px solid rgba(109,191,58,0.22);border-radius:10px;color:var(--lime2);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body)">🧪 Test</button>
+        <button id="cfg-btn-prod" style="flex:1;padding:9px;background:rgba(244,234,208,0.05);border:1px solid rgba(244,234,208,0.12);border-radius:10px;color:rgba(244,234,208,0.45);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body)">🚀 Production</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <input class="config-input" id="cfg-webhook" readonly value="https://agroyield.vercel.app/api/notify" style="margin:0;flex:1;font-size:12px;color:rgba(244,234,208,0.55)"/>
+        <button id="btn-copy-wh" style="padding:10px 13px;background:rgba(109,191,58,0.10);border:1px solid rgba(109,191,58,0.22);border-radius:10px;color:var(--lime2);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-body)">📋</button>
+      </div>
+      <button class="btn-save" id="btn-save-config">💾 Enregistrer</button>
+      <div class="status-msg" id="cfg-status"></div>
+    </div>
+
+    <div class="config-card">
+      <span class="config-label">Zone dangereuse</span>
+      <p style="font-size:12px;color:rgba(244,234,208,0.45);margin-bottom:12px">Ces actions sont irréversibles.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-danger" id="btn-reset-stats">🗑️ Effacer toutes les stats</button>
+        <button class="btn-danger" id="btn-reset-history">🗑️ Effacer l'historique</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app-admin -->
+
+<script>
+/* ════════════════════════════════════
+   AUTHENTIFICATION
+════════════════════════════════════ */
+var DEFAULT_PWD = "agroyield2025";
+var PWD_KEY = "ay_admin_pwd";
+var SESSION_KEY = "ay_admin_session";
+
+function getAdminPwd(){
+  return localStorage.getItem(PWD_KEY) || DEFAULT_PWD;
+}
+function isLoggedIn(){
+  return sessionStorage.getItem(SESSION_KEY) === "1";
+}
+function login(pwd){
+  if(pwd === getAdminPwd()){
+    sessionStorage.setItem(SESSION_KEY,"1");
+    showDashboard();
+    return true;
+  }
+  return false;
+}
+function logout(){
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById("lock-screen").style.display = "flex";
+  document.getElementById("app-admin").style.display = "none";
+  document.getElementById("lock-pwd").value = "";
+}
+function showDashboard(){
+  document.getElementById("lock-screen").style.display = "none";
+  document.getElementById("app-admin").style.display = "flex";
+  initDashboard();
+}
+
+// Auto-login si session active
+if(isLoggedIn()) showDashboard();
+
+document.getElementById("lock-btn").addEventListener("click",function(){
+  var pwd = document.getElementById("lock-pwd").value;
+  if(!login(pwd)){
+    document.getElementById("lock-err").style.display = "block";
+    document.getElementById("lock-pwd").style.borderColor = "rgba(220,60,50,0.50)";
+    setTimeout(function(){
+      document.getElementById("lock-err").style.display = "none";
+      document.getElementById("lock-pwd").style.borderColor = "";
+    },2500);
+  }
+});
+document.getElementById("lock-pwd").addEventListener("keydown",function(e){
+  if(e.key==="Enter") document.getElementById("lock-btn").click();
+});
+document.getElementById("btn-logout").addEventListener("click", logout);
+
+/* ════════════════════════════════════
+   TABS
+════════════════════════════════════ */
+document.querySelectorAll(".tab-btn").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    document.querySelectorAll(".tab-btn").forEach(function(b){b.classList.remove("active");});
+    document.querySelectorAll(".tab-content").forEach(function(t){t.classList.remove("active");});
+    btn.classList.add("active");
+    var tab = document.getElementById("tab-"+btn.dataset.tab);
+    if(tab) tab.classList.add("active");
+  });
+});
+
+/* ════════════════════════════════════
+   DONNÉES
+════════════════════════════════════ */
+function getHistorique(){
+  try{ return JSON.parse(localStorage.getItem("ay_historique")||"[]"); }
+  catch(e){ return []; }
+}
+function getSessions(){ return parseInt(localStorage.getItem("ay_sessions"))||0; }
+function getRevenus(){ return parseInt(localStorage.getItem("ay_revenus"))||0; }
+function getPromos(){ try{ return JSON.parse(localStorage.getItem("ay_promos")||"[]"); }catch(e){return[];} }
+function savePromos(p){ try{ localStorage.setItem("ay_promos",JSON.stringify(p)); }catch(e){} }
+
+/* ════════════════════════════════════
+   INIT DASHBOARD
+════════════════════════════════════ */
+function initDashboard(){
+  var hist = getHistorique();
+  var sessions = getSessions();
+  var revenus = getRevenus();
+  var promosUsees = getPromos().filter(function(p){return p.usages>0;}).length;
+
+  // Stats principales
+  document.getElementById("d-revenus").textContent = revenus.toLocaleString("fr-FR");
+  document.getElementById("d-sessions").textContent = sessions;
+  document.getElementById("d-minutes").textContent = sessions * 30;
+  document.getElementById("d-promos-used").textContent = promosUsees;
+
+  // Env badge
+  var env = localStorage.getItem("ay_cp_env")||"test";
+  var envBadge = document.getElementById("env-badge");
+  envBadge.textContent = env==="production" ? "🚀 Production" : "🧪 Test";
+  envBadge.style.background = env==="production" ? "rgba(109,191,58,0.14)" : "rgba(240,184,64,0.14)";
+  envBadge.style.color = env==="production" ? "var(--lime2)" : "var(--sun)";
+
+  // Statut CinetPay
+  var hasCinetpay = localStorage.getItem("ay_cp_key") && localStorage.getItem("ay_cp_site");
+  document.getElementById("status-cinetpay").textContent = hasCinetpay ? "✅ Configurée" : "⚠️ Non configurée";
+  document.getElementById("status-cinetpay").style.color = hasCinetpay ? "var(--lime2)" : "var(--sun)";
+
+  // Chart méthodes
+  buildChartMethodes(hist);
+
+  // 5 dernières transactions
+  buildRecentTable(hist);
+
+  // Onglet transactions
+  buildAllTable(hist);
+
+  // Analytiques
+  buildAnalytiques(hist);
+
+  // Promos
+  buildPromoListe();
+
+  // Config
+  var key = localStorage.getItem("ay_cp_key")||"";
+  var site = localStorage.getItem("ay_cp_site")||"";
+  if(key) document.getElementById("cfg-apikey").value = key;
+  if(site) document.getElementById("cfg-siteid").value = site;
+  var envCfg = env==="production";
+  styleEnvBtn(envCfg);
+}
+
+/* ── Chart méthodes ── */
+function buildChartMethodes(hist){
+  var counts = {};
+  hist.forEach(function(t){
+    var m = t.methode||"Autre";
+    counts[m] = (counts[m]||0) + 1;
+  });
+  var wrap = document.getElementById("chart-methodes");
+  if(!hist.length){wrap.innerHTML='<div class="empty"><span class="empty-ico">📊</span>Aucune transaction</div>';return;}
+  var max = Math.max.apply(null, Object.values(counts));
+  wrap.innerHTML = "";
+  Object.keys(counts).forEach(function(m){
+    var pct = max > 0 ? Math.round(counts[m]/max*100) : 0;
+    var el = document.createElement("div");
+    el.className = "chart-bar-item";
+    el.innerHTML = '<div class="chart-bar-lbl">'+m+'</div>'
+      +'<div class="chart-bar-track"><div class="chart-bar-fill" style="width:'+pct+'%"></div></div>'
+      +'<div class="chart-bar-val">'+counts[m]+' session'+(counts[m]>1?'s':'')+'</div>';
+    wrap.appendChild(el);
+  });
+}
+
+/* ── Recent table ── */
+function buildRecentTable(hist){
+  var tbody = document.getElementById("tbody-recent");
+  var recent = hist.slice(0,5);
+  if(!recent.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:rgba(244,234,208,0.28);padding:20px">Aucune transaction</td></tr>';return;}
+  tbody.innerHTML = recent.map(function(t){
+    return '<tr><td>'+t.date+'</td><td>'+t.methode+'</td><td style="color:var(--lime2);font-weight:700">'+t.montant+' '+t.devise+'</td><td style="font-size:11px;font-family:monospace;color:rgba(244,234,208,0.45)">'+t.id+'</td><td><span class="badge-ok">✅ '+t.statut+'</span></td></tr>';
+  }).join("");
+}
+
+/* ── All transactions table ── */
+function buildAllTable(hist){
+  var tbody = document.getElementById("tbody-all");
+  var cnt = document.getElementById("tx-count");
+  cnt.textContent = hist.length+" transaction"+(hist.length>1?"s":"");
+  if(!hist.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:rgba(244,234,208,0.28);padding:20px">Aucune transaction</td></tr>';return;}
+  tbody.innerHTML = hist.map(function(t,i){
+    var isTest = t.id&&t.id.indexOf("TEST")>=0;
+    return '<tr><td style="color:rgba(244,234,208,0.38)">'+(i+1)+'</td><td>'+t.date+'</td><td style="font-weight:600">'+t.prenom+'</td><td>'+t.methode+'</td><td style="color:var(--lime2);font-weight:700">'+t.montant+' '+t.devise+'</td><td style="font-size:11px;font-family:monospace;color:rgba(244,234,208,0.45)">'+t.id+'</td><td>'+(isTest?'<span class="badge-test">🧪 Test</span>':'<span class="badge-ok">✅ OK</span>')+'</td></tr>';
+  }).join("");
+}
+
+/* ── Analytiques ── */
+function buildAnalytiques(hist){
+  var now = new Date();
+  var today = now.toDateString();
+  var semaine = now - 7*24*3600*1000;
+  var mois = now - 30*24*3600*1000;
+  var auj = hist.filter(function(t){return new Date(t.ts||0).toDateString()===today;}).length;
+  var sem = hist.filter(function(t){return (t.ts||0)>=semaine;}).length;
+  var mo = hist.filter(function(t){return (t.ts||0)>=mois;}).length;
+  document.getElementById("a-auj").textContent = auj;
+  document.getElementById("a-semaine").textContent = sem;
+  document.getElementById("a-mois").textContent = mo;
+
+  // Chart répartition
+  var counts = {};
+  hist.forEach(function(t){var m=t.methode||"Autre";counts[m]=(counts[m]||0)+1;});
+  var repartWrap = document.getElementById("chart-repartition");
+  if(!hist.length){repartWrap.innerHTML='<div class="empty"><span class="empty-ico">📊</span>Aucune donnée</div>';return;}
+  var total = hist.length;
+  repartWrap.innerHTML = "";
+  Object.keys(counts).forEach(function(m){
+    var pct = Math.round(counts[m]/total*100);
+    var el = document.createElement("div"); el.className="chart-bar-item";
+    el.innerHTML='<div class="chart-bar-lbl">'+m+'</div><div class="chart-bar-track"><div class="chart-bar-fill" style="width:'+pct+'%"></div></div><div class="chart-bar-val">'+pct+'%</div>';
+    repartWrap.appendChild(el);
+  });
+
+  // Évolution 7 jours (canvas simple)
+  var canvas = document.getElementById("canvas-evolution");
+  var ctx = canvas.getContext("2d");
+  canvas.width = canvas.parentElement.offsetWidth - 32;
+  canvas.height = 120;
+  var jours = [];
+  for(var i=6;i>=0;i--){
+    var d=new Date(now-i*24*3600*1000);
+    jours.push({label:["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"][d.getDay()],count:hist.filter(function(t){return new Date(t.ts||0).toDateString()===d.toDateString();}).length});
+  }
+  var maxV = Math.max.apply(null,jours.map(function(j){return j.count;}));
+  if(maxV===0)maxV=1;
+  var w=canvas.width,h=canvas.height,pad=30,barW=Math.floor((w-pad*2)/7*0.6);
+  ctx.clearRect(0,0,w,h);
+  jours.forEach(function(j,i){
+    var x=pad+i*(w-pad*2)/7;
+    var bh=Math.round((j.count/maxV)*(h-40));
+    var y=h-20-bh;
+    ctx.fillStyle="rgba(109,191,58,0.55)";
+    if(bh>0)ctx.fillRect(x,y,barW,bh);
+    ctx.fillStyle="rgba(244,234,208,0.35)";
+    ctx.font="11px 'DM Sans',sans-serif";
+    ctx.fillText(j.label,x,h-4);
+    if(j.count>0){ctx.fillStyle="var(--lime2)";ctx.fillText(j.count,x+2,y-4);}
+  });
+}
+
+/* ════════════════════════════════════
+   CODES PROMO
+════════════════════════════════════ */
+function buildPromoListe(){
+  var promos = getPromos();
+  var wrap = document.getElementById("promo-liste");
+  if(!promos.length){wrap.innerHTML='<div class="empty"><span class="empty-ico">🎁</span>Aucun code promo créé</div>';return;}
+  wrap.innerHTML = "";
+  promos.forEach(function(p,i){
+    var item = document.createElement("div"); item.className="promo-item";
+    var typeLabel = p.type==="gratuit"?"1 consultation gratuite":p.type==="50"?"50% de réduction":"-500 FCFA";
+    item.innerHTML='<div class="promo-code">'+p.code+'</div>'
+      +'<div><div style="font-size:12px;font-weight:600;color:var(--lime2)">'+typeLabel+'</div><div class="promo-meta">'+p.usages+'/'+p.max+' utilisations · Créé le '+p.date+'</div></div>'
+      +'<button class="promo-del" data-i="'+i+'">✕</button>';
+    item.querySelector(".promo-del").addEventListener("click",function(){
+      var ps=getPromos();ps.splice(i,1);savePromos(ps);buildPromoListe();
+    });
+    wrap.appendChild(item);
+  });
+}
+
+document.getElementById("btn-gen-promo").addEventListener("click",function(){
+  var chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var code="AGRO";
+  for(var i=0;i<4;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById("promo-code-input").value=code;
+});
+
+document.getElementById("btn-creer-promo").addEventListener("click",function(){
+  var code=(document.getElementById("promo-code-input").value||"").trim().toUpperCase();
+  var type=document.getElementById("promo-type").value;
+  var max=parseInt(document.getElementById("promo-max").value)||10;
+  if(!code){alert("Entrez un code promo.");return;}
+  var promos=getPromos();
+  if(promos.some(function(p){return p.code===code;})){alert("Ce code existe déjà.");return;}
+  promos.push({code:code,type:type,max:max,usages:0,date:new Date().toLocaleDateString("fr-FR")});
+  savePromos(promos);
+  buildPromoListe();
+  document.getElementById("promo-code-input").value="";
+  document.getElementById("promo-max").value="";
+});
+
+/* ════════════════════════════════════
+   CONFIGURATION
+════════════════════════════════════ */
+var currentEnv = localStorage.getItem("ay_cp_env")||"test";
+function styleEnvBtn(isProd){
+  var bt=document.getElementById("cfg-btn-test");
+  var bp=document.getElementById("cfg-btn-prod");
+  bt.style.background=!isProd?"rgba(109,191,58,0.18)":"rgba(244,234,208,0.05)";
+  bt.style.color=!isProd?"var(--lime2)":"rgba(244,234,208,0.45)";
+  bp.style.background=isProd?"rgba(240,184,64,0.14)":"rgba(244,234,208,0.05)";
+  bp.style.color=isProd?"var(--sun)":"rgba(244,234,208,0.45)";
+  currentEnv=isProd?"production":"test";
+}
+document.getElementById("cfg-btn-test").addEventListener("click",function(){styleEnvBtn(false);});
+document.getElementById("cfg-btn-prod").addEventListener("click",function(){styleEnvBtn(true);});
+
+document.getElementById("btn-copy-wh").addEventListener("click",function(){
+  navigator.clipboard&&navigator.clipboard.writeText("https://agroyield.vercel.app/api/notify").then(function(){
+    var b=document.getElementById("btn-copy-wh");b.textContent="✅";
+    setTimeout(function(){b.textContent="📋";},2000);
+  });
+});
+
+document.getElementById("btn-save-config").addEventListener("click",function(){
+  var k=document.getElementById("cfg-apikey").value.trim();
+  var s=document.getElementById("cfg-siteid").value.trim();
+  if(k)localStorage.setItem("ay_cp_key",k);
+  if(s)localStorage.setItem("ay_cp_site",s);
+  localStorage.setItem("ay_cp_env",currentEnv);
+  var st=document.getElementById("cfg-status");
+  st.style.display="block";st.className="status-msg status-ok";
+  st.textContent="✅ Configuration sauvegardée · Mode "+(currentEnv==="production"?"Production":"Test");
+  setTimeout(function(){st.style.display="none";},3000);
+  initDashboard();
+});
+
+document.getElementById("btn-change-pwd").addEventListener("click",function(){
+  var p=document.getElementById("new-pwd").value;
+  var st=document.getElementById("pwd-status");
+  if(!p||p.length<6){st.style.display="block";st.className="status-msg status-err";st.textContent="❌ Minimum 6 caractères";return;}
+  localStorage.setItem(PWD_KEY,p);
+  st.style.display="block";st.className="status-msg status-ok";st.textContent="✅ Mot de passe modifié";
+  document.getElementById("new-pwd").value="";
+  setTimeout(function(){st.style.display="none";},3000);
+});
+
+document.getElementById("btn-reset-stats").addEventListener("click",function(){
+  if(!confirm("Effacer toutes les statistiques ?"))return;
+  localStorage.removeItem("ay_sessions");localStorage.removeItem("ay_revenus");
+  initDashboard();
+});
+document.getElementById("btn-reset-history").addEventListener("click",function(){
+  if(!confirm("Effacer tout l'historique des transactions ?"))return;
+  localStorage.removeItem("ay_historique");
+  initDashboard();
+});
+
+/* ── Export CSV ── */
+document.getElementById("btn-export-csv").addEventListener("click",function(){
+  var hist=getHistorique();
+  if(!hist.length){alert("Aucune transaction à exporter.");return;}
+  var rows=["#,Date,Agriculteur,Methode,Montant,Devise,Transaction ID,Statut"];
+  hist.forEach(function(t,i){
+    rows.push((i+1)+","+t.date+","+t.prenom+","+t.methode+","+t.montant+","+t.devise+","+t.id+","+t.statut);
+  });
+  var blob=new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8;"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download="agroyield_transactions_"+new Date().toISOString().slice(0,10)+".csv";
+  a.click();URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>
